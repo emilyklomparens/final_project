@@ -20,7 +20,7 @@ COLORS = {
 }
 
 class Property():
-    """Object representing one property.
+    """Temporary class for an object representing one property.
     
     Attributes:
         color (string): the color of the property; or railroad/utility.
@@ -31,6 +31,8 @@ class Property():
         
         Arguments:
             color (string): the color of the property; or railroad/utility.
+        Side effects:
+            Modifies color attribute to specified color.
         """
         
         self.color = color
@@ -49,6 +51,8 @@ class Player():
         Arguments:
             prop_owned (list of Property): list comprising all properties a 
             player owns.
+        Side effects:
+            Modifies prop_owned attribute to specified properties.
         """
         
         self.prop_owned = prop_owned
