@@ -29,7 +29,7 @@ class Property():
     def __init__(self, color):
         """Sets attributes of the Property class upon initialization.
         
-        Arguments:
+        Args:
             color (string): the color of the property; or railroad/utility.
         Side effects:
             Modifies color attribute to specified color.
@@ -48,7 +48,7 @@ class Player():
     def __init__(self, prop_owned):
         """Sets attributes of the Player class upon initialization.
         
-        Arguments:
+        Args:
             prop_owned (list of Property): list comprising all properties a 
             player owns.
         Side effects:
@@ -62,7 +62,7 @@ def mp_check(player, col):
     properties; or more than one of either railroads or utilities. Then, finds
     the appropriate rent multiplier for the opposing player.
     
-    Arguments:
+    Args:
         player (Player): instance of Player class representing the player whose
             property was landed on.
         col (string): a string representing the color of the landed-on property.
