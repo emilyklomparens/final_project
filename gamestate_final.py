@@ -4,7 +4,7 @@ import random
 
 class GameState:
     def __init__(self):
-        self.board = pd.read_csv(r"C:\Users\bman0\Documents\College\INST326\final_project\Board.csv")
+        self.board = pd.read_csv(r"C:\Users\bman0\Documents\College\INST326\final_project\board.csv")
         
         #List of players currently in the game and a list of current players who lost
         self.current_players = []
