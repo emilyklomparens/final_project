@@ -6,7 +6,7 @@ class Player():
         self.jail = False
         self.props_owned = []
         self.turn_counter = 0
-        self.position = "GO"
+        self.position = 0
 
     def turn():
         #roll 
@@ -26,14 +26,14 @@ class HumanPlayer(Player):
         roll = rand.int(1,12)
         print (f"You rolled", {roll})
         #Calculate new postion 
-        
+        # wrap around 39 to 0
         #Check if sold 
         if ("property is sold to computer"):
             self.money - property.rent 
         elif ("player owns property"):
             print("You already own this property.")
         else:
-            print(f"This propert is for sale for", {property.price})
+            print(f"This property is for sale for", {property.price})
             buy = input(f"{self.name}, would you like to buy Y or N")
             if (buy == 'Y'):
                 self.props_owned.add(property.name)
