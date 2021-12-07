@@ -26,7 +26,7 @@ class HumanPlayer(Player):
         roll = rand.int(1,12)
         print (f"You rolled", {roll})
         #Calculate new postion 
-        # wrap around 39 to 0
+        self.position = (self.position + roll)%39
         #Check if sold 
         if ("property is sold to computer"):
             self.money - property.rent 
