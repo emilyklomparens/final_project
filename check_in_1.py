@@ -3,11 +3,10 @@ from typing import TYPE_CHECKING
 
 class ComputerPlayer:
     """
-    This class is placed here as a placeholder so the function can work, it 
-    represents the game status of a computer player.
+    It represents the game status of a computer player.
     
     """
-    def __init__(self, difficulty, money):
+    def __init__(self, difficulty):
         """
         Computerplayer is a class that functions as another player in the game.
         There are varying levels of difficulty avaliable, and for initialization
@@ -15,20 +14,24 @@ class ComputerPlayer:
         
         Args:
             difficulty, a value from 0 (easy) to 1 (hard)
-            
-            money, the amount in dollars the computer player has
-            
+                        
         Side effects:
             changes attributes of self object
         
         """
         self.difficulty = difficulty
-        self.money = money
+        self.money = 1500
+        self.name = "Computer"
+        self.jail = False
+        self.props_owned = []
+        self.turn_counter = 0
+        self.position = 0
+        
 
     def get_out_of_jail(self):
         """
         This function will determine whether the Computer should pay to get out 
-        of jail (0 means no, 1 means yes). First, it rolls a pair of dice three
+        of jail . First, it rolls a pair of dice three
         times, and if any of them are a double, bail is free.
         
         
@@ -36,39 +39,31 @@ class ComputerPlayer:
         The difficulty the user initialized will determine whether the bail 
         behavior is intelligent or random.
         
-        Returns: 0 or 1, which are yes and no responses respectively for the
-        Question- should I pay to get out of jail? May also return getting out
-        of jail for free.
+        Returns: Output of whether computer should pay to get out of jail.
+        May also return getting out of jail for free.
         
         
         
         """
-        turns=0
-        while turns < 3:
+        while self.turn_counter < 3:
             dice1 = random.randint(1,6)
             dice2 = random.randint(1,6)
             if dice1 == dice2:
-                return ("You rolled a double, get out of jail for free")
-            elif dice1 != dice2:
-                continue
-            turns += 1
-        
-        if self.difficulty == 0:
-            output = random.randint(0,1)
-            return output
-        elif self.difficulty == 1:
-            if self.money > 50:
-                output = 1
-                self.money -= 50
-                return output
-            else:
-                output = 0
-                return output    
+                print ("You rolled a double, get out of jail for free")
+                self.jail = False
+            
+            
+            if self.difficulty == 0:
+                output = random.randint(0,1)
+                if output == 1:
+                    self.jail = False
+                    self.money -= 50
+                    print("Paid to get out of jail")
                     
-                
+            elif self.difficulty == 1:
+                if self.money > 50 and len(self.props_owned) > 1:
+                    self.money -= 50
+                    self.jail = False
+                    print("Paid to get out of jail")
             
-            
-            
-            
-        
-            
+            self.turn_counter += 1
