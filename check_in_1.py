@@ -1,5 +1,4 @@
 import random
-from typing import TYPE_CHECKING
 
 class ComputerPlayer:
     """
