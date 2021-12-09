@@ -219,5 +219,22 @@ class GameState:
         else:
             return cell
 
-
-
+def Game():
+    
+    rounds = 0
+    
+    g = GameState()
+    h1 = HumanPlayer("Player 1")
+    h2 = ComputerPlayer("Player2")
+    
+    while rounds < 10:
+        rounds += 1
+        h1.turn()
+        h2.turn()
+        
+    if h1.money > h2.money:
+        print(f"{h1.name} has won!")
+    elif h1.money < h2.money:
+        print(f"{h2.name} has won!")
+    else:
+        print("The two players have tied.")
