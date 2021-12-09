@@ -47,7 +47,6 @@ class ComputerPlayer(Player):
         self.name = "Computer"
         self.difficulty = difficulty
     
-
 class GameState:
     def __init__(self):
         self.board = pd.read_csv(r"C:\Users\bman0\Documents\College\INST326\final_project\board.csv")
@@ -219,4 +218,6 @@ class GameState:
             return int(cell)
         else:
             return cell
+
+
 
