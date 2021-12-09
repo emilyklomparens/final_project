@@ -23,23 +23,33 @@ class Player():
         raise NotImplementedError
 
 class HumanPlayer(Player):
-    def turn(self, state):
+    def turn(self, state, other):
         print(state)
         roll = rand.int(1,12)
         print (f"You rolled", {roll})
-        #Calculate new postion 
+        #Calculate new postion
+        print (f"You landed on", {state.get_cell(self.position, "Space Name")}) 
         self.position = (self.position + roll)%39
         #Check if sold 
-        if ("property is sold to computer"):
-            self.money - property.rent 
-        elif ("player owns property"):
+        if (state.get_cell(self.position, "Owner") == other.name):
+            self.money - state.get_current_rent(self.position)
+        elif (state.get_cell(self.position, "Owner") == self.name):
             print("You already own this property.")
-        else:
-            print(f"This property is for sale for", {property.price})
+        elif (state.get_cell(self.position, "Owner") == "Bank"):
+            print(f"This property is for sale for", 
+            {state.get_cell(self.position, "Price")})
             buy = input(f"{self.name}, would you like to buy Y or N")
             if (buy == 'Y'):
-                self.props_owned.add(property.name)
-                self.money -= property.cost
+                self.props_owned.add(state.get_cell(self.position, "Space Name"))
+                self.money -= state.get_cell(self.position, "Price")
+        else:
+            if(state.get_cell(self.position, "Space Name") == "Comunity Chest"):
+                print('You landed on Community Chest')
+            elif(state.get_cell(self.position, "Space Name") == "Jail"):
+                print('You landed on Jail')
+            else:
+                print('You landed on Chance')
+
         self.turn_counter = self.turn_counter + 1
     
 class ComputerPlayer(Player):
@@ -136,9 +146,7 @@ class GameState:
                                 "You are assessed for street repair. $40 per house. $115 per hotel", "You have won second prize in a beauty contest. Collect $10",
                                 "You inherit $100"]
         self.used_community_chest = []
-        
-        
-    
+
     
     def get_property_overview(self, space_number): #Returns an fstring that represents a property card
         if space_number in [12, 28]:#Utilities
