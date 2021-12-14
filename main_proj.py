@@ -152,8 +152,7 @@ class ComputerPlayer:
         May also return getting out of jail for free.
         
         """
-        print(f"\n{self.name}, You are in jail.\nPress enter.")
-        input()
+        print(f"\n{self.name}, is in jail.")
         # 3 options 
         if (self.jail_cards >= 1):
             action = '3'
@@ -207,7 +206,7 @@ class ComputerPlayer:
             
               
             
-    def turn(self, state, other):
+    def turn(self, state):
         print(f"{self.name} has ${self.money}")
         if (self.jail == False):
             roll = random.randint(1,12)
@@ -221,34 +220,35 @@ class ComputerPlayer:
                 self.position += roll
             print (f"{self.name} landed on {state.get_cell(self.position, 'SpaceName')}.\n")
             #Check if sold
-            if (state.get_cell(self.position, "Owner") == other.name):
+            if (state.get_cell(self.position, "Owner") != self.name) and (state.get_cell(self.position, "Owner") != "bank"):
                 self.money - state.get_current_rent(self.position)
-                print(f"{other.name} owns this property, you owe ${state.get_current_rent(self.position)}. \nPress enter to pay rent.")
-                input()
+                print(f"{state.get_cell(space_number=self.position, column_name="Owner")} owns this property, you owe ${state.get_current_rent(self.position)}.")
                 self.money -= state.get_current_rent(self.position)
                 print(f"{self.name} now has ${self.money}.")
             elif (state.get_cell(self.position, "Owner") == self.name):
                 print(f"{self.name} already own this property.")
             elif (state.get_cell(self.position, "Owner") == "bank"):
                 print(f"This property is for sale for ${state.get_cell(self.position, 'Price')}.")
-                if state.get_cell(self.position, 'Price') < self.money:
-                    buy = 'Y'
-                else:
-                    buy = 'N'
+                
+                
+                #ai computerplayer makes a choice to buy the property or not
+                if self.difficulty == 0:
+                    decision = random.randint(0,1)
+                    if decision == 1:
+                        buy = 'Y'
+                    elif decision == 0:
+                        buy = 'N'
+                    
+                elif self.difficulty ==1:
+                    if state.get_cell(self.position, 'Price') < self.money and len(self.props_owned) > 0:
+                        buy = 'Y'
+                    else:
+                        buy = 'N'
                     
             if (buy == 'Y'):
                 self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                 self.money -= state.get_cell(self.position, "Price")
                 state.change_owner(self.position, self.name)
-            else:
-                if(state.get_cell(self.position, "SpaceName") == "Community Chest"):
-                    # update when community chest is built
-                    input()
-                elif(state.get_cell(self.position, "SpaceName") == "Go To Jail"):
-                    self.jail = True
-                else:
-                    #update when chance is built
-                    input()
         else:
             self.get_out_of_jail()
 
