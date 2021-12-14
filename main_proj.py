@@ -53,7 +53,7 @@ class HumanPlayer(Player):
                 buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
                 if (buy == 'Y'):
                     self.props_owned.append(state.get_cell(self.position, "SpaceName"))
-                    self.money -= state.get_cell(self.position, "Price")
+                    self.money -= int(state.get_cell(self.position, "Price"))
                     state.change_owner(self.position, self.name)
             else:
                 if(state.get_cell(self.position, "SpaceName") == "Community Chest"):
@@ -247,7 +247,7 @@ class ComputerPlayer:
                     
            if (buy == 'Y'):
                 self.props_owned.append(state.get_cell(self.position, "SpaceName"))
-                self.money -= state.get_cell(self.position, "Price")
+                self.money -= int(state.get_cell(self.position, "Price"))
                 state.change_owner(self.position, self.name)
         else:
             self.get_out_of_jail()
