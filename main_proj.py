@@ -231,21 +231,21 @@ class ComputerPlayer:
             elif (state.get_cell(self.position, "Owner") == "bank"):
                 print(f"This property is for sale for ${state.get_cell(self.position, 'Price')}.")
                 
-                #ai computerplayer makes a choice to buy the property or not
-                if self.difficulty == 0:
-                    decision = rand.randint(0,1)
-                    if decision == 1:
-                        buy = 'Y'
-                    elif decision == 0:
-                        buy = 'N'
+           #ai computerplayer makes a choice to buy the property or not
+           if self.difficulty == 0:
+               decision = rand.randint(0,1)
+               if decision == 1:
+                   buy = 'Y'
+               elif decision == 0:
+                   buy = 'N'
                     
-                elif self.difficulty ==1:
-                    if state.get_cell(self.position, 'Price') < self.money and len(self.props_owned) > 0:
-                        buy = 'Y'
-                    else:
-                        buy = 'N'
+           elif self.difficulty ==1:
+               if state.get_cell(self.position, 'Price') < self.money and len(self.props_owned) > 0:
+                   buy = 'Y'
+               else:
+                   buy = 'N'
                     
-            if (buy == 'Y'):
+           if (buy == 'Y'):
                 self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                 self.money -= state.get_cell(self.position, "Price")
                 state.change_owner(self.position, self.name)
