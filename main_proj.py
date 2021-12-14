@@ -430,7 +430,7 @@ def Game():
     
     g = GameState()
     h1 = HumanPlayer("Player 1")
-    h2 = HumanPlayer("Player2")
+    h2 = ComputerPlayer(0)
     
     while rounds < 10:
         rounds += 1
