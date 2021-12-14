@@ -158,7 +158,7 @@ class ComputerPlayer:
             action = '3'
         else:
             if self.difficulty == 0:
-                output = random.randint(0,1)
+                output = rand.randint(0,1)
                 if output == 1:
                     action = '2'
                 elif output == 0:
@@ -180,8 +180,8 @@ class ComputerPlayer:
         elif (action == '2'):
             print("Press enter to roll. You have to roll doubles to get out of jail.")
             input()
-            roll1 = random.randint(1,6)
-            roll2 = random.randint(1,6)
+            roll1 = rand.randint(1,6)
+            roll2 = rand.randint(1,6)
             print(f"You rolled a {roll1} and a {roll2} \n")
             self.jail_turn_counter += 1
             if (roll1 == roll2):
@@ -209,7 +209,7 @@ class ComputerPlayer:
     def turn(self, state, other):
         print(f"{self.name} has ${self.money}")
         if (self.jail == False):
-            roll = random.randint(1,12)
+            roll = rand.randint(1,12)
             print(f"{self.name} now has ${self.money}.")
             print (f"{self.name} rolled {roll}.")
             #Calculate new postion
@@ -233,7 +233,7 @@ class ComputerPlayer:
                 
                 #ai computerplayer makes a choice to buy the property or not
                 if self.difficulty == 0:
-                    decision = random.randint(0,1)
+                    decision = rand.randint(0,1)
                     if decision == 1:
                         buy = 'Y'
                     elif decision == 0:
