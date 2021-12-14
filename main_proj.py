@@ -206,7 +206,7 @@ class ComputerPlayer:
             
               
             
-    def turn(self, state):
+    def turn(self, state, other):
         print(f"{self.name} has ${self.money}")
         if (self.jail == False):
             roll = random.randint(1,12)
@@ -220,16 +220,16 @@ class ComputerPlayer:
                 self.position += roll
             print (f"{self.name} landed on {state.get_cell(self.position, 'SpaceName')}.\n")
             #Check if sold
-            if (state.get_cell(self.position, "Owner") != self.name) and (state.get_cell(self.position, "Owner") != "bank"):
+            if (state.get_cell(self.position, "Owner") == other.name):
                 self.money - state.get_current_rent(self.position)
-                print(f"""{state.get_cell(space_number=self.position, column_name="Owner")} owns this property, you owe ${state.get_current_rent(self.position)}.""")
+                print(f"{other.name} owns this property, you owe ${state.get_current_rent(self.position)}. \nPress enter to pay rent.")
+                input()
                 self.money -= state.get_current_rent(self.position)
                 print(f"{self.name} now has ${self.money}.")
             elif (state.get_cell(self.position, "Owner") == self.name):
                 print(f"{self.name} already own this property.")
             elif (state.get_cell(self.position, "Owner") == "bank"):
                 print(f"This property is for sale for ${state.get_cell(self.position, 'Price')}.")
-                
                 
                 #ai computerplayer makes a choice to buy the property or not
                 if self.difficulty == 0:
