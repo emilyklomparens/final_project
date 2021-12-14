@@ -222,7 +222,7 @@ class ComputerPlayer:
             #Check if sold
             if (state.get_cell(self.position, "Owner") != self.name) and (state.get_cell(self.position, "Owner") != "bank"):
                 self.money - state.get_current_rent(self.position)
-                print(f"{state.get_cell(space_number=self.position, column_name="Owner")} owns this property, you owe ${state.get_current_rent(self.position)}.")
+                print(f"""{state.get_cell(space_number=self.position, column_name="Owner")} owns this property, you owe ${state.get_current_rent(self.position)}.""")
                 self.money -= state.get_current_rent(self.position)
                 print(f"{self.name} now has ${self.money}.")
             elif (state.get_cell(self.position, "Owner") == self.name):
