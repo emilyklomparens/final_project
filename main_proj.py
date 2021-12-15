@@ -602,9 +602,9 @@ def parse_args(arglist):
     """
     parser = ArgumentParser()
     parser.add_argument("ComputerDifficulty", help="Enter 0 or 1 for computer difficulty")
-    parser.add_argument("PlayerName", type=float, help="Enter your name here")
+    parser.add_argument("PlayerName", type=str, help="Enter your name here")
     return parser.parse_args(arglist)
 
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
-    Game(args.ComputerDifficulty, args.PlayerName)
+    Game(difficulty=args.ComputerDifficulty, playername=args.PlayerName)
