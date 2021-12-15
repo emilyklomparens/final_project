@@ -381,7 +381,7 @@ class HumanPlayer(Player):
                     self.money += int(state.get_cell(self.position, "MortgageValue"))
                     state.change_owner(self.position, "Bank")
                     print(f"{self.name} now has ${self.money}.")
-                if ques != "N":
+                elif ques != "N":
                     print("Try again")
                     ques = input("Would you like to sell your property? Y or N \n")
 
