@@ -525,6 +525,13 @@ class ComputerPlayer(Player):
                 elif (state.get_cell(self.position, "SpaceName") == "Free Parking" or state.get_cell(self.position, "SpaceName") == "Jail"):
                     pass
                 
+            #The computer sells property to the bank if low on money
+            if (state.get_cell(self.position, "Owner")== self.name) and (state.get_cell(self.position, "MortgageValue") != None):
+                if self.money < 200:
+                    self.money += int(state.get_cell(self.position, "MortgageValue"))
+                    state.change_owner(self.position, "Bank")
+                    print(f"{self.name} now has ${self.money}.")
+                    print(f"""{state.get_cell(self.position, "Owner")} is the new property owner""")
         else:
             self.get_out_of_jail()
         
