@@ -491,7 +491,7 @@ class ComputerPlayer(Player):
                     else:
                         print(f"{self.name} did not buy this property.")
                 elif self.difficulty == 1:               
-                    if len(self.props_owned) > 0:
+                    if self.money > 2*int(state.get_cell(self.position, "Price")):
                         print(f"{self.name} bought this property.")
                         self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                         self.money -= int(state.get_cell(self.position, "Price"))
