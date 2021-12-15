@@ -373,6 +373,17 @@ class HumanPlayer(Player):
                     self.position = 10
                 elif (state.get_cell(self.position, "SpaceName") == "Free Parking" or state.get_cell(self.position, "SpaceName") == "Jail"):
                     pass
+            
+            #sell your own property to the bank
+            if (state.get_cell(self.position, "Owner")== self.name) and (state.get_cell(self.position, "MortgageValue") != None):
+                ques = input("Would you like to sell your property? Y or N \n")
+                if ques == "Y":
+                    self.money += int(state.get_cell(self.position, "MortgageValue"))
+                    state.change_owner(self.position, "Bank")
+                    print(f"{self.name} now has ${self.money}.")
+                if ques != "N":
+                    print("Try again")
+                    ques = input("Would you like to sell your property? Y or N \n")
 
         else:
             self.get_out_of_jail()
