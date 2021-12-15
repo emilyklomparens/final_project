@@ -2,257 +2,6 @@ import random as rand
 from math import isnan
 import pandas as pd
 
-class Player():
-    def __init__(self, name):
-        self.name = name
-        self.money = 1500
-        self.jail = False
-        self.props_owned = []
-        self.jail_turn_counter = 0
-        self.position = 0
-        self.jail_cards = 0
-
-    def turn():
-        """Take a turn.
-        
-        Args:
-            state (GameState): a snapshot of the current state of the game.
-        
-        Returns:
-            str: the player's guess (a letter or a word).
-        """
-        raise NotImplementedError
-
-class HumanPlayer(Player):
-    def turn(self, state, other):
-        if (self.jail == False):
-            print(f"{self.name}, press enter to roll.")
-            input()
-            roll = rand.randint(1,12)
-            print(f"{self.name} has has ${self.money}.")
-            print (f"{self.name} rolled {roll}.")
-            #Calculate new postion
-            if self.position + roll > 39:
-                self.position = (self.position + roll) % 39
-                self.money += 200
-            else:
-                self.position += roll
-            print (f"{self.name} landed on {state.get_cell(self.position, 'SpaceName')}.\n")
-            #Check type of space
-            if (state.get_cell(self.position, "Owner") == other.name):
-                self.money - state.get_current_rent(self.position)
-                print(f"{other.name} owns this property, you owe ${state.get_current_rent(self.position)}. \nPress enter to pay rent.")
-                input()
-                self.money -= state.get_current_rent(self.position)
-                print(f"{self.name} now has ${self.money}.")
-            elif (state.get_cell(self.position, "Owner") == self.name):
-                print(f"{self.name} already own this property.")
-            elif (state.get_cell(self.position, "Owner") == "bank"):
-                print(f"This property is for sale for ${state.get_cell(self.position, 'Price')}.")
-                buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
-                if (buy == 'Y'):
-                    self.props_owned.append(state.get_cell(self.position, "SpaceName"))
-                    self.money -= int(state.get_cell(self.position, "Price"))
-                    state.change_owner(self.position, self.name)
-            else:
-                if(state.get_cell(self.position, "SpaceName") == "Community Chest"):
-                    # update when community chest is built
-                    input()
-                if(state.get_cell(self.position, "SpaceName") == "Go To Jail"):
-                    self.jail = True
-                if(state.get_cell(self.position, "SpaceName") == "Go To Jail"):
-                    #update when chance is built
-                    input()
-        else:
-            self.get_out_of_jail()
-    
-    def get_out_of_jail(self):
-        print(f"\n{self.name}, You are in jail.\nPress enter.")
-        input()
-        # 3 options 
-        if (self.jail_cards >= 1):
-            action = input(f"You have 3 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles. \n3. Use a Get Out Of Jail Free Card. (You have {self.jail_cards} Get Out Of Jail Free Card(s))\nEnter 1, 2, or 3\n")
-        else:
-            action = input(f"You have 2 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles.\nEnter 1 or 2.\n")
-        # Pay fine
-        if (action == '1'):
-            print(f"You will pay the $50 fine and are now out of jail.")
-            self.jail = False
-            self.jail_turn_counter = 0
-            self.money -= 50
-            print(f"{self.name} now has ${self.money}.")
-        # Roll
-        elif (action == '2'):
-            print("Press enter to roll. You have to roll doubles to get out of jail.")
-            input()
-            roll1 = rand.randint(1,6)
-            roll2 = rand.randint(1,6)
-            print(f"You rolled a {roll1} and a {roll2} \n")
-            self.jail_turn_counter += 1
-            if (roll1 == roll2):
-                print(f"You rolled doubles! You are now out of jail.")
-                self.jail= False
-                self.jail_turn_counter = 0
-            else: 
-                print(f"You did not roll doubles. You are still in jail. You have {3-self.jail_turn_counter} attempts to roll left.")
-                if (self.jail_turn_counter == 3):
-                    print(f"Since you did not roll doubles in 3 turns, you have to pay the $50 fine.")
-                    self.jail = False
-                    self.jail_turn_counter = 0
-                    self.money -= 50
-                    print(f"{self.name} now has ${self.money}.")
-        # Use get out of jail free card
-        else:
-            print(f"You are using your Get Out Of Jail Free Card.")
-            self.jail = False
-            self.jail_cards -= 1
-            print(f"You now have {self.jail_cards} Get Out Of Jail Free Card(s)")
-            self.jail_turn_counter = 0
-
-#import random
-
-class ComputerPlayer:
-    """
-    It represents the game status of a computer player.
-    
-    """
-    def __init__(self, difficulty):
-        """
-        Computerplayer is a class that functions as another player in the game.
-        There are varying levels of difficulty avaliable, and for initialization
-        , you need money amount and the difficulty (0 or 1).
-        
-        Args:
-            difficulty, a value from 0 (easy) to 1 (hard)
-                        
-        Side effects:
-            changes attributes of self object
-        
-        """
-        self.difficulty = difficulty
-        self.money = 1500
-        self.name = "Computer"
-        self.jail = False
-        self.props_owned = []
-        self.turn_counter = 0
-        self.position = 0
-        self.jail_cards=0
-        
-    def get_out_of_jail(self):
-        """
-        This function will determine whether the Computer should pay to get out 
-        of jail . First, it rolls a pair of dice three
-        times, and if any of them are a double, bail is free.
-        
-        The difficulty the user initialized will determine whether the bail 
-        behavior is intelligent or random.
-        
-        Returns: Output of whether computer should pay to get out of jail.
-        May also return getting out of jail for free.
-        
-        """
-        print(f"\n{self.name}, is in jail.")
-        # 3 options 
-        if (self.jail_cards >= 1):
-            action = '3'
-        else:
-            if self.difficulty == 0:
-                output = rand.randint(0,1)
-                if output == 1:
-                    action = '2'
-                elif output == 0:
-                    action = '1'
-            elif self.difficulty == 1:
-                if self.money > 50 and len(self.props_owned) > 1:
-                    action = '1'
-                else:
-                    action = '2'
-                
-        # Pay fine
-        if (action == '1'):
-            print(f"You will pay the $50 fine and are now out of jail.")
-            self.jail = False
-            self.jail_turn_counter = 0
-            self.money -= 50
-            print(f"{self.name} now has ${self.money}.")
-        # Roll
-        elif (action == '2'):
-            print("Press enter to roll. You have to roll doubles to get out of jail.")
-            input()
-            roll1 = rand.randint(1,6)
-            roll2 = rand.randint(1,6)
-            print(f"You rolled a {roll1} and a {roll2} \n")
-            self.jail_turn_counter += 1
-            if (roll1 == roll2):
-                print(f"You rolled doubles! You are now out of jail.")
-                self.jail= False
-                self.jail_turn_counter = 0
-            else: 
-                print(f"You did not roll doubles. You are still in jail. You have {3-self.jail_turn_counter} attempts to roll left.")
-                if (self.jail_turn_counter == 3):
-                    print(f"Since you did not roll doubles in 3 turns, you have to pay the $50 fine.")
-                    self.jail = False
-                    self.jail_turn_counter = 0
-                    self.money -= 50
-                    print(f"{self.name} now has ${self.money}.")
-        # Use get out of jail free card
-        else:
-            print(f"You are using your Get Out Of Jail Free Card.")
-            self.jail = False
-            self.jail_cards -= 1
-            print(f"You now have {self.jail_cards} Get Out Of Jail Free Card(s)")
-            self.jail_turn_counter = 0
-            
-              
-            
-    def turn(self, state, other):
-        print(f"{self.name} has ${self.money}")
-        if (self.jail == False):
-            roll = rand.randint(1,12)
-            print(f"{self.name} now has ${self.money}.")
-            print (f"{self.name} rolled {roll}.")
-            #Calculate new postion
-            if self.position + roll > 39:
-                self.position = (self.position + roll) % 39
-                self.money += 200
-            else:
-                self.position += roll
-            print (f"{self.name} landed on {state.get_cell(self.position, 'SpaceName')}.\n")
-            #Check if sold
-            if (state.get_cell(self.position, "Owner") == other.name):
-                self.money - state.get_current_rent(self.position)
-                print(f"{other.name} owns this property, you owe ${state.get_current_rent(self.position)}. \nPress enter to pay rent.")
-                input()
-                self.money -= state.get_current_rent(self.position)
-                print(f"{self.name} now has ${self.money}.")
-            elif (state.get_cell(self.position, "Owner") == self.name):
-                print(f"{self.name} already own this property.")
-            elif (state.get_cell(self.position, "Owner") == "bank"):
-                print(f"This property is for sale for ${state.get_cell(self.position, 'Price')}.")
-                
-           #ai computerplayer makes a choice to buy the property or not
-            if self.difficulty == 0:
-               decision = rand.randint(0,1)
-               if decision == 1:
-                   buy = 'Y'
-               elif decision == 0:
-                   buy = 'N'
-                    
-            elif self.difficulty ==1:
-               if state.get_cell(self.position, 'Price') < self.money and len(self.props_owned) > 0:
-                   buy = 'Y'
-               else:
-                   buy = 'N'
-                    
-            if (buy == 'Y'):
-                self.props_owned.append(state.get_cell(self.position, "SpaceName"))
-                self.money -= int(state.get_cell(self.position, "Price"))
-                state.change_owner(self.position, self.name)
-        else:
-            self.get_out_of_jail()
-
-
-    
 class GameState:
     def __init__(self):
         self.board = pd.read_csv("board.csv")
@@ -264,25 +13,24 @@ class GameState:
         #List of Chance cards, used cards are popped into the "used" list and returned when all cards have been used.
         self.chance = ["Advance to Boardwalk", "Advance to Go (Collect $200)", "Advance to Illinois Avenue. If you pass Go, collect $200", 
                        "Advance to St. Charles Place. If you pass Go, collect $200", 
-                       "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay wonder twice the rental to which they are otherwise entitled", 
-                       "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay wonder twice the rental to which they are otherwise entitled", 
-                       "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown.", 
+                       "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled", 
+                       "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled", 
+                       "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown", 
                        "Bank pays you dividend of $50", "Get Out of Jail Free", "Go Back 3 Spaces", "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200", 
                        "Make general repairs on all your property. For each house pay $25. For each hotel pay $100", "Speeding fine $15",
-                       "Take a trip to Reading Railroad. If you pass Go, collect $200", "You have been elected Chairman of the Board. Pay each player $50", 
+                       "Take a trip to Reading Railroad. If you pass Go, collect $200", "You have been elected Chairman of the Board. Pay other player $50", 
                        "Your building loan matures. Collect $150"]
         self.used_chance = []
         
         #List of community chest cards, used cards are popped into the "used" list and returned when all cards have been used.
-        self.community_chest = ["Advance to Go (Collect $200)", "Bank error in your favor. Collect $200", "Doctor’s fee. Pay $50", "From sale of stock you get $50", 
-                                "Get Out of Jail Free", "Go to Jail. Go directly to jail, do not pass Go, do not collect $200", "Holiday fund matures. Receive $100", 
-                                "Income tax refund. Collect $20", "It is your birthday. Collect $10 from every player", "Life insurance matures. Collect $100", 
-                                "Pay hospital fees of $100", "Pay school fees of $50", "Receive $25 consultancy fee", 
-                                "You are assessed for street repair. $40 per house. $115 per hotel", "You have won second prize in a beauty contest. Collect $10",
+        self.community_chest = ["Bank error in your favor. Collect $200"]
+        self.used_community_chest = ["Advance to Go (Collect $200)", "Bank error in your favor. Collect $200", "Doctor’s fee. Pay $50", "From sale of stock you get $50", 
+                                "Get Out of Jail Free", "Go to Jail. Go directly to jail, do not pass Go, do not collect $200", "Holiday fund matures. Collect $100", 
+                                "Income tax refund. Collect $20", "It is your birthday. Collect $10 from the other player", "Life insurance matures. Collect $100", 
+                                "Pay hospital fees of $100", "Pay school fees of $50", "Collect $25 consultancy fee", 
+                                "You are assessed for street repair. Pay $40 per house. $115 per hotel", "You have won second prize in a beauty contest. Collect $10",
                                 "You inherit $100"]
-        self.used_community_chest = []
-
-    
+        
     def get_property_overview(self, space_number): #Returns an fstring that represents a property card
         if space_number in [12, 28]:#Utilities
             return f"{self.get_space_name(space_number)}\nIf one \"Utilitiy\" is owned rent is 4 times amount shown on dice.\nIf both \"Utilities\" are owned rent is 10 times amount shown on dice.\nMortgage Value: $75\nCurrent Owner: {self.get_owner(space_number)}"
@@ -321,7 +69,7 @@ class GameState:
             if myrr == rr[3]:
                 counter += 1
             if counter == 0:
-                return "No Railroads owned"
+                return "No Railroads owned."
             elif counter == 1:
                 return 25
             elif counter == 2:
@@ -366,7 +114,9 @@ class GameState:
             return list(dex)
         else:
             return int(dex)
-    
+        
+    def get_owner(self, space_number):
+        return self.board.loc[space_number, "Owner"]
     
     def change_owner(self, space_number, player_name): #Changes the owner of the property to the given name. Owner is "bank" by default
         if self.checker(self.board.loc[space_number, "Owner"]) == " NaN: This cell doesn't have a value :( ":
@@ -392,7 +142,7 @@ class GameState:
         if len(self.chance) == 0:
             self.chance = self.used_chance
             self.used_chance = []
-        card = self.chance.pop(self.chance.index(random.choice(self.chance)))
+        card = self.chance.pop(self.chance.index(rand.choice(self.chance)))
         self.used_chance.append(card)
         return card
     
@@ -400,7 +150,7 @@ class GameState:
         if len(self.community_chest) == 0:
             self.community_chest = self.used_community_chest
             self.used_community_chest = []
-        card = self.community_chest.pop(self.community_chest.index(random.choice(self.community_chest)))
+        card = self.community_chest.pop(self.community_chest.index(rand.choice(self.community_chest)))
         self.used_community_chest.append(card)
         return card
         
@@ -422,6 +172,392 @@ class GameState:
             return int(cell)
         else:
             return cell
+
+class Player():
+    def __init__(self, name):
+        self.name = name
+        self.money = 1500
+        self.jail = False
+        self.props_owned = []
+        self.jail_turn_counter = 0
+        self.position = 0
+        self.jail_cards = 0
+
+    def turn():
+        """Take a turn.
+        
+        Args:
+            state (GameState): a snapshot of the current state of the game.      
+        Returns:
+            str: the player's guess (a letter or a word).
+        """
+        raise NotImplementedError
+        
+    def o_spaces(self, state, other):
+        if state.get_cell(self.position, "SpaceName") == "Chance":
+            card = state.get_chance()
+            print(f"{self.name} has drawn: {card}.")
+            if card == "Advance to Boardwalk":
+                self.position = 39
+            elif card == "Advance to Go (Collect $200)":
+                self.position = 0
+                self.money += 200
+            elif card == "Advance to Illinois Avenue. If you pass Go, collect $200":
+                if self.position > 25:
+                    self.money += 200
+                self.position = 24
+            elif card ==  "Advance to St. Charles Place. If you pass Go, collect $200":
+                if self.position > 12:
+                    self.money += 200
+                self.position = 11
+            elif card == "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled":
+                sn = self.position
+                while "Railroad" not in state.get_cell(sn, "SpaceName") and "Short Line" not in state.get_cell(sn, "SpaceName"):
+                    sn += 1
+                    if sn > 39:
+                        sn = sn % 39
+                self.position = sn
+                if state.get_owner(self.position) == self.name:
+                    print("This is a railroad you own.")
+                elif state.get_owner(self.position) == other.name:
+                    print("This is a railroad your opponent owns. Pay twice.")
+                    self.money -= 2 * state.get_current_rent(self.position)
+                    other.money += 2 * state.get_current_rent(self.position)
+                else:
+                    print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
+                    buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
+                    if (buy == 'Y'):
+                        self.props_owned.append(state.get_cell(self.position, "SpaceName"))
+                        self.money -= int(state.get_cell(self.position, "Price"))
+                        state.change_owner(self.position, self.name)
+            elif card == "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown":
+                sn = self.position
+                while "Electric" not in state.get_cell(sn, "SpaceName") and "Water" not in state.get_cell(sn, "SpaceName"):
+                    sn += 1
+                self.position = sn
+                if state.get_owner(self.position) == self.name:
+                    print("This is an utility you own.")
+                elif state.get_owner(self.position) == other.name:
+                    print("This is an utility your opponent owns. Throw dice and pay owner 10x the amount thrown.")
+                    mt = rand.randint(1, 12)
+                    print(f"You rolled {mt}.")
+                    self.money -= mt * 10
+                    other.money += mt * 10
+                else:
+                    print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
+                    buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
+                    if (buy == 'Y'):
+                        self.props_owned.append(state.get_cell(self.position, "SpaceName"))
+                        self.money -= int(state.get_cell(self.position, "Price"))
+                        state.change_owner(self.position, self.name)
+            elif card == "Bank pays you dividend of $50":
+                self.money += 50
+            elif card == "Get Out of Jail Free":
+                self.jail_cards += 1
+            elif card == "Go Back 3 Spaces":
+                self.position -= 3
+            elif card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200":
+                self.jail = True
+                self.position = 10
+                print("Yeah, that's rough buddy :/")
+            elif card == "Make general repairs on all your property. For each house pay $25. For each hotel pay $100":
+                # Fix when houses and hotels
+                pass
+            elif card == "Speeding fine $15":
+                self.money -= 15
+            elif card == "Take a trip to Reading Railroad. If you pass Go, collect $200":
+                if self.position > 6:
+                    self.money += 200
+                self.position = 5
+            elif card == "You have been elected Chairman of the Board. Pay other player $50":
+                self.money -= 50
+                other.money += 50
+            elif card == "Your building loan matures. Collect $150":
+                self.money += 150
+                
+        if state.get_cell(self.position, "SpaceName") == "Community Chest":
+            card = state.get_community_chest()
+            print(f"{self.name} has drawn: {card}.")
+            if card == "Advance to Go (Collect $200)":
+                self.position = 0
+                self.money += 200
+            elif card == "Get Out of Jail Free":
+                self.jail_cards += 1
+                print(f"{self.name} now has {self.jail_cards} jail cards.")
+            elif card == "Go to Jail. Go directly to jail, do not pass Go, do not collect $200":
+                self.jail = True
+                self.position = 10
+                print("Yeah, that's rough buddy :/")
+            elif card == "It is your birthday. Collect $10 from the other player":
+                other.money -= 10
+                self.money += 10
+            elif card == "You are assessed for street repair. Pay $40 per house. $115 per hotel":
+                # Update when houses and hotels are done.
+                return None
+            else:
+                amt = []
+                for i in card:
+                    if i.isdigit():
+                        amt.append(i)
+                if "Collect" in card or "collect" in card or "get" in card or "inherit" in card:
+                    self.money += int("".join(amt))
+                else:
+                    self.money -= int("".join(amt))
+                    
+        if state.get_cell(self.position, "SpaceName") == "Income Tax":
+            self.money -= 200
+
+        print(f"{self.name} is now on {state.get_cell(self.position, 'SpaceName')} and has ${self.money}.")
+        input()
+
+class HumanPlayer(Player):
+    
+    def turn(self, state, other):
+        if (self.jail == False):
+            print(f"{self.name}, press enter to roll.")
+            input()
+            roll = rand.randint(1,12)
+            print(f"{self.name} has has ${self.money}.")
+            print (f"{self.name} rolled {roll}.")
+            
+            #Calculate new postion
+            if self.position + roll > 39:
+                self.position = (self.position + roll) % 39
+                self.money += 200
+            else:
+                self.position += roll
+            print (f"{self.name} landed on {state.get_cell(self.position, 'SpaceName')}.\n")
+            
+            #Check type of space
+            if (state.get_cell(self.position, "Owner") == other.name):
+                #self.money - state.get_current_rent(self.position) Don't know if there's supposed to be an extra self.money line!
+                print(f"{other.name} owns this property, you owe ${state.get_current_rent(self.position)}. \nPress enter to pay rent.")
+                input()
+                self.money -= state.get_current_rent(self.position)
+                other.money += state.get_current_rent(self.position)
+                print(f"{self.name} now has ${self.money}.")
+            elif (state.get_cell(self.position, "Owner") == self.name):
+                print(f"{self.name} already own this property.")
+            elif (state.get_cell(self.position, "Owner") == "bank"):
+                print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
+                buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
+                if (buy == 'Y'):
+                    self.props_owned.append(state.get_cell(self.position, "SpaceName"))
+                    self.money -= int(state.get_cell(self.position, "Price"))
+                    state.change_owner(self.position, self.name)
+            else:
+                if (state.get_cell(self.position, "SpaceName") == "Community Chest" or state.get_cell(self.position, "SpaceName") == "Chance" or
+                  state.get_cell(self.position, "SpaceName") == "Income Tax"):
+                    self.o_spaces(state, other)
+                elif (state.get_cell(self.position, "SpaceName") == "Go To Jail"):
+                    self.jail = True
+                    self.position = 10
+                elif (state.get_cell(self.position, "SpaceName") == "Free Parking"):
+                    pass
+
+        else:
+            self.get_out_of_jail()
+    
+    def get_out_of_jail(self):
+        
+        print(f"\n{self.name}, You are in jail.\nPress enter.")
+        input()
+        
+        # 3 options
+        if (self.jail_cards >= 1):
+            action = input(f"You have 3 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles. \n3. Use a Get Out Of Jail Free Card. (You have {self.jail_cards} Get Out Of Jail Free Card(s))\nEnter 1, 2, or 3\n")
+        else:
+            action = input(f"You have 2 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles.\nEnter 1 or 2.\n")
+            
+        # Pay fine
+        if (action == '1'):
+            print(f"You will pay the $50 fine and are now out of jail.")
+            self.jail = False
+            self.jail_turn_counter = 0
+            self.money -= 50
+            print(f"{self.name} now has ${self.money}.")
+            
+        # Roll
+        elif (action == '2'):
+            print("Press enter to roll. You have to roll doubles to get out of jail.")
+            input()
+            roll1 = rand.randint(1,6)
+            roll2 = rand.randint(1,6)
+            print(f"You rolled a {roll1} and a {roll2} \n")
+            self.jail_turn_counter += 1
+            if (roll1 == roll2):
+                print(f"You rolled doubles! You are now out of jail.")
+                self.jail = False
+                self.jail_turn_counter = 0
+            else: 
+                print(f"You did not roll doubles. You are still in jail. You have {3-self.jail_turn_counter} attempts to roll left.")
+                if (self.jail_turn_counter == 3):
+                    print(f"Since you did not roll doubles in 3 turns, you have to pay the $50 fine.")
+                    self.jail = False
+                    self.jail_turn_counter = 0
+                    self.money -= 50
+                    print(f"{self.name} now has ${self.money}.")
+                    
+        # Use get out of jail free card
+        else:
+            print(f"You are using your Get Out Of Jail Free Card.")
+            self.jail = False
+            self.jail_cards -= 1
+            print(f"You now have {self.jail_cards} Get Out Of Jail Free Card(s)")
+            self.jail_turn_counter = 0
+
+#import random
+class ComputerPlayer(Player):
+    """
+    It represents the game status of a computer player.
+    
+    """
+    def __init__(self, difficulty):
+        """
+        Computerplayer is a class that functions as another player in the game.
+        There are varying levels of difficulty avaliable, and for initialization
+        , you need money amount and the difficulty (0 or 1).
+        
+        Args:
+            difficulty, a value from 0 (easy) to 1 (hard)
+                        
+        Side effects:
+            changes attributes of self object
+        """
+                
+        self.difficulty = difficulty
+        self.name = "Computer"
+        self.money = 1500
+        self.jail = False
+        self.props_owned = []
+        self.jail_turn_counter = 0
+        self.position = 0
+        self.jail_cards = 0
+        
+    def turn(self, state, other):
+        
+        if (self.jail == False):
+            roll = rand.randint(1,12)
+            print(f"{self.name} has ${self.money}.")
+            print (f"{self.name} rolled {roll}.")
+            
+            #Calculate new postion
+            if self.position + roll > 39:
+                self.position = (self.position + roll) % 39
+                self.money += 200
+            else:
+                self.position += roll
+            print (f"{self.name} landed on {state.get_cell(self.position, 'SpaceName')}.\n")
+            
+            #Check if sold
+            if (state.get_cell(self.position, "Owner") == other.name):
+                #self.money - state.get_current_rent(self.position)
+                print(f"{other.name} owns this property, you owe ${state.get_current_rent(self.position)}. \nPress enter to pay rent.")
+                input()
+                self.money -= state.get_current_rent(self.position)
+                other.money += state.get_current_rent(self.position)
+                print(f"{self.name} now has ${self.money}.")
+            elif (state.get_cell(self.position, "Owner") == self.name):
+                print(f"{self.name} already own this property.")
+            elif (state.get_cell(self.position, "Owner") == "bank"):
+                print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
+                
+                if self.difficulty == 0:
+                    decision = rand.randint(0,1)
+                    if decision == 1:
+                        buy = 'Y'
+                    elif decision == 0:
+                        buy = 'N'
+                elif self.difficulty ==1:               
+                    if state.get_cell(self.position, 'Price') < self.money and len(self.props_owned) > 0:
+                        buy = 'Y'
+                    else:
+                        buy = 'N'
+                        
+                if (buy == 'Y'):
+                    self.props_owned.append(state.get_cell(self.position, "SpaceName"))
+                    self.money -= int(state.get_cell(self.position, "Price"))
+                    state.change_owner(self.position, self.name)
+            else:
+                if(state.get_cell(self.position, "SpaceName") == "Community Chest" or state.get_cell(self.position, "SpaceName") == "Chance" or
+                  state.get_cell(self.position, "SpaceName") == "Income Tax"):
+                    self.o_spaces(state, other)
+                elif(state.get_cell(self.position, "SpaceName") == "Go To Jail"):
+                    self.jail = True
+                    self.position = 10
+                elif (state.get_cell(self.position, "SpaceName") == "Free Parking"):
+                    pass
+                
+        else:
+            self.get_out_of_jail()
+        
+    def get_out_of_jail(self):
+        """
+        This function will determine whether the Computer should pay to get out 
+        of jail . First, it rolls a pair of dice three
+        times, and if any of them are a double, bail is free.
+        
+        The difficulty the user initialized will determine whether the bail 
+        behavior is intelligent or random.
+        
+        Returns: Output of whether computer should pay to get out of jail.
+        May also return getting out of jail for free.
+        
+        """
+        print(f"\n{self.name}, is in jail.")
+        
+        # 3 options 
+        if (self.jail_cards >= 1):
+            action = '3'
+        else:
+            if self.difficulty == 0:
+                output = rand.randint(0,1)
+                if output == 1:
+                    action = '2'
+                elif output == 0:
+                    action = '1'
+            elif self.difficulty == 1:
+                if self.money > 50 and len(self.props_owned) > 1:
+                    action = '1'
+                else:
+                    action = '2'
+                
+        # Pay fine
+        if (action == '1'):
+            print(f"You will pay the $50 fine and are now out of jail.")
+            self.jail = False
+            self.jail_turn_counter = 0
+            self.money -= 50
+            print(f"{self.name} now has ${self.money}.")
+            
+        # Roll
+        elif (action == '2'):
+            print("Press enter to roll. You have to roll doubles to get out of jail.")
+            input()
+            roll1 = rand.randint(1,6)
+            roll2 = rand.randint(1,6)
+            print(f"You rolled a {roll1} and a {roll2} \n")
+            self.jail_turn_counter += 1
+            if (roll1 == roll2):
+                print(f"You rolled doubles! You are now out of jail.")
+                self.jail= False
+                self.jail_turn_counter = 0
+            else: 
+                print(f"You did not roll doubles. You are still in jail. You have {3-self.jail_turn_counter} attempts to roll left.")
+                if (self.jail_turn_counter == 3):
+                    print(f"Since you did not roll doubles in 3 turns, you have to pay the $50 fine.")
+                    self.jail = False
+                    self.jail_turn_counter = 0
+                    self.money -= 50
+                    print(f"{self.name} now has ${self.money}.")
+                    
+        # Use get out of jail free card
+        else:
+            print(f"You are using your Get Out Of Jail Free Card.")
+            self.jail = False
+            self.jail_cards -= 1
+            print(f"You now have {self.jail_cards} Get Out Of Jail Free Card(s)")
+            self.jail_turn_counter = 0
 
 def Game():
     
