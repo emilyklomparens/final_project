@@ -25,12 +25,11 @@ class Player():
 
 class HumanPlayer(Player):
     def turn(self, state, other):
-        print(f"{self.name} has ${self.money}")
         if (self.jail == False):
-            print("Press enter to roll.")
+            print(f"{self.name}, press enter to roll.")
             input()
             roll = rand.randint(1,12)
-            print(f"{self.name} now has ${self.money}.")
+            print(f"{self.name} has has ${self.money}.")
             print (f"{self.name} rolled {roll}.")
             #Calculate new postion
             if self.position + roll > 39:
@@ -59,9 +58,9 @@ class HumanPlayer(Player):
                 if(state.get_cell(self.position, "SpaceName") == "Community Chest"):
                     # update when community chest is built
                     input()
-                elif(state.get_cell(self.position, "SpaceName") == "Go To Jail"):
+                if(state.get_cell(self.position, "SpaceName") == "Go To Jail"):
                     self.jail = True
-                else:
+                if(state.get_cell(self.position, "SpaceName") == "Go To Jail"):
                     #update when chance is built
                     input()
         else:
