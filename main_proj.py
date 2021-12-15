@@ -39,7 +39,7 @@ class HumanPlayer(Player):
             else:
                 self.position += roll
             print (f"{self.name} landed on {state.get_cell(self.position, 'SpaceName')}.\n")
-            #Check if sold
+            #Check type of space
             if (state.get_cell(self.position, "Owner") == other.name):
                 self.money - state.get_current_rent(self.position)
                 print(f"{other.name} owns this property, you owe ${state.get_current_rent(self.position)}. \nPress enter to pay rent.")
