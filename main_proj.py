@@ -233,6 +233,11 @@ class Player():
                         self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                         self.money -= int(state.get_cell(self.position, "Price"))
                         state.change_owner(self.position, self.name)
+                    elif (buy == 'N'):
+                        print ("The choice is made to not purchase")
+                    else:
+                        print("Try again")
+                        buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
             elif card == "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown":
                 sn = self.position
                 while "Electric" not in state.get_cell(sn, "SpaceName") and "Water" not in state.get_cell(sn, "SpaceName"):
@@ -253,6 +258,11 @@ class Player():
                         self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                         self.money -= int(state.get_cell(self.position, "Price"))
                         state.change_owner(self.position, self.name)
+                    elif (buy == 'N'):
+                        print ("The choice is made to not purchase")
+                    else:
+                        print("Try again")
+                        buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
             elif card == "Bank pays you dividend of $50":
                 self.money += 50
             elif card == "Get Out of Jail Free":
@@ -349,6 +359,11 @@ class HumanPlayer(Player):
                     self.money -= int(state.get_cell(self.position, "Price"))
                     state.change_owner(self.position, self.name)
                     print(f"{self.name} now has ${self.money}.")
+                elif (buy == 'N'):
+                        print ("The choice is made to not purchase")
+                else:
+                    print("Try again")
+                    buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
             else:
                 if (state.get_cell(self.position, "SpaceName") == "Community Chest" or state.get_cell(self.position, "SpaceName") == "Chance" or
                   state.get_cell(self.position, "SpaceName") == "Income Tax"):
