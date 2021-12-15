@@ -1,6 +1,8 @@
 import random as rand
 from math import isnan
 import pandas as pd
+from argparse import ArgumentParser
+import sys
 
 class GameState:
     def __init__(self):
@@ -563,13 +565,13 @@ class ComputerPlayer(Player):
             print(f"{self.name} now have {self.jail_cards} Get Out Of Jail Free Card(s)")
             self.jail_turn_counter = 0
 
-def Game():
+def Game(difficulty, playername):
     
     rounds = 0
     
     g = GameState()
-    h1 = HumanPlayer("Player 1")
-    h2 = ComputerPlayer(0)
+    h1 = HumanPlayer(playername)
+    h2 = ComputerPlayer(difficulty)
     
     while rounds < 10:
         rounds += 1
@@ -585,5 +587,24 @@ def Game():
     else:
         print("The two players have tied.")
 
+def parse_args(arglist):
+    """ Parse command-line arguments.
+    
+    Expect these mandatory arguments:
+        -ComputerDifficulty
+        -PlayerName
+    
+    Args:
+        arglist (list of str): arguments from the command line.
+    
+    Returns:
+        namespace: the parsed arguments, as a namespace.
+    """
+    parser = ArgumentParser()
+    parser.add_argument("ComputerDifficulty", help="Enter 0 or 1 for computer difficulty")
+    parser.add_argument("PlayerName", type=float, help="Enter your name here")
+    return parser.parse_args(arglist)
+
 if __name__ == '__main__':
-    Game()
+    args = parse_args(sys.argv[1:])
+    Game(args.ComputerDifficulty, args.PlayerName)
