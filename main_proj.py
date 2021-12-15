@@ -173,20 +173,6 @@ class GameState:
         else:
             return cell
 
-def mortgage(self,state):
-    if (state.get_cell(self.position, "MortgageValue") != None):
-        print(f"{state.get_cell(self.position, "Owner")} owns this property")
-        if state.get_cell(self.position, "Owner") == self.name:
-            self.money += int(state.get_cell(self.position, "MortgageValue"))
-            state.change_owner(self.position, "Bank")
-            print(f"{self.name} now has ${self.money}.")
- 
-def unmortgage(self,state):
-    if (state.get_cell(self.position, "MortgageValue")) != None and state.get_cell(self.position, "Owner") == "Bank":
-        print(f"{state.get_cell(self.position, "Owner")} owns this property")
-        self.money -= int(state.get_cell(self.position, "MortgageValue"))
-        state.change_owner(self.position, self.name)
-        print(f"{self.name} now has ${self.money}.")
         
 class Player():
     def __init__(self, name):
