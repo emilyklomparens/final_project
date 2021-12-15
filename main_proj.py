@@ -458,7 +458,7 @@ class ComputerPlayer(Player):
         if (self.jail == False):
             roll1 = rand.randint(1,6)
             roll2 = rand.randint(1,6)
-            roll =  30
+            roll =  roll1 + roll2
             print(f"{self.name} has ${self.money}.")
             print(f"{self.name} rolled {roll}.")
             
@@ -479,8 +479,7 @@ class ComputerPlayer(Player):
             elif (state.get_cell(self.position, "Owner") == self.name):
                 print(f"{self.name} already own this property.")
             elif (state.get_cell(self.position, "Owner") == "bank"):
-                print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
-                
+                print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.") 
                 if self.difficulty == 0:
                     decision = rand.randint(0,1)
                     if decision == 1:
@@ -489,7 +488,7 @@ class ComputerPlayer(Player):
                         self.money -= int(state.get_cell(self.position, "Price"))
                         state.change_owner(self.position, self.name)
                         print(f"{self.name} now has ${self.money}.")
-                    elif decision == 0:
+                    else:
                         print(f"{self.name} did not buy this property.")
                 elif self.difficulty == 1:               
                     if len(self.props_owned) > 0:
@@ -500,10 +499,11 @@ class ComputerPlayer(Player):
                         print(f"{self.name} now has ${self.money}.")
                     else:
                         print(f"{self.name} did not buy this property.")
-                        
-                
-                #else:
-                    #print(f"{self.name} did not buy this property.")
+                            
+                else:
+                    print("There was no difficulty specified")   
+                    #else:
+                        #print(f"{self.name} did not buy this property.")
             else:
                 if(state.get_cell(self.position, "SpaceName") == "Community Chest" or state.get_cell(self.position, "SpaceName") == "Chance" or
                   state.get_cell(self.position, "SpaceName") == "Income Tax"):
@@ -534,7 +534,11 @@ class ComputerPlayer(Player):
         
         # 3 options 
         if (self.jail_cards >= 1):
-            action = '3'
+            print(f"{self.name} are using your Get Out Of Jail Free Card.")
+            self.jail = False
+            self.jail_cards -= 1
+            print(f"{self.name} now have {self.jail_cards} Get Out Of Jail Free Card(s)")
+            self.jail_turn_counter = 0
         else:
             if self.difficulty == 0:
                 output = rand.randint(0,1)
@@ -585,14 +589,6 @@ class ComputerPlayer(Player):
             self.jail_turn_counter = 0
             self.money -= 50
             print(f"{self.name} now has ${self.money}.")
-        
-        # Use get out of jail free card
-        else:
-            print(f"{self.name} are using your Get Out Of Jail Free Card.")
-            self.jail = False
-            self.jail_cards -= 1
-            print(f"{self.name} now have {self.jail_cards} Get Out Of Jail Free Card(s)")
-            self.jail_turn_counter = 0
 
 def Game(difficulty, playername):
     
@@ -630,10 +626,10 @@ def parse_args(arglist):
         namespace: the parsed arguments, as a namespace.
     """
     parser = ArgumentParser()
-    parser.add_argument("ComputerDifficulty", help="Enter 0 or 1 for computer difficulty")
+    parser.add_argument("ComputerDifficulty", type=int, help="Enter 0 or 1 for computer difficulty")
     parser.add_argument("PlayerName", type=str, help="Enter your name here")
     return parser.parse_args(arglist)
 
 if __name__ == '__main__':
     args = parse_args(sys.argv[1:])
-    Game(difficulty=args.ComputerDifficulty, playername=args.PlayerName)
+    Game(args.ComputerDifficulty, playername=args.PlayerName)
