@@ -1,3 +1,6 @@
+"""A module for playing a game of Monopoly.
+"""
+
 import random as rand
 from math import isnan
 import pandas as pd
@@ -19,8 +22,7 @@ class GameState:
                        "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled", 
                        "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown", 
                        "Bank pays you dividend of $50", "Get Out of Jail Free", "Go Back 3 Spaces", "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200", 
-                       "Make general repairs on all your property. For each house pay $25. For each hotel pay $100", "Speeding fine $15",
-                       "Take a trip to Reading Railroad. If you pass Go, collect $200", "You have been elected Chairman of the Board. Pay other player $50", 
+                       "Speeding fine $15", "Take a trip to Reading Railroad. If you pass Go, collect $200", "You have been elected Chairman of the Board. Pay other player $50", 
                        "Your building loan matures. Collect $150"]
         self.used_chance = []
         
@@ -29,8 +31,7 @@ class GameState:
         self.used_community_chest = ["Advance to Go (Collect $200)", "Bank error in your favor. Collect $200", "Doctor’s fee. Pay $50", "From sale of stock you get $50", 
                                 "Get Out of Jail Free", "Go to Jail. Go directly to jail, do not pass Go, do not collect $200", "Holiday fund matures. Collect $100", 
                                 "Income tax refund. Collect $20", "It is your birthday. Collect $10 from the other player", "Life insurance matures. Collect $100", 
-                                "Pay hospital fees of $100", "Pay school fees of $50", "Collect $25 consultancy fee", 
-                                "You are assessed for street repair. Pay $40 per house. $115 per hotel", "You have won second prize in a beauty contest. Collect $10",
+                                "Pay hospital fees of $100", "Pay school fees of $50", "Collect $25 consultancy fee", "You have won second prize in a beauty contest. Collect $10",
                                 "You inherit $100"]
         
     def get_property_overview(self, space_number): #Returns an fstring that represents a property card
@@ -44,7 +45,6 @@ class GameState:
             return f"{self.get_space_name(space_number)}"
         else:#Properties
             return f"{self.get_space_name(space_number)} ({self.get_color(space_number)})\nRent: ${self.get_rent(space_number)}\nWith 1 House: ${self.get_1_house_rent(space_number)}\nWith 2 Houses: ${self.get_2_house_rent(space_number)}\nWith 3 Houses: ${self.get_3_house_rent(space_number)}\nWith 4 Houses: ${self.get_4_house_rent(space_number)}\nWith Hotel: ${self.get_hotel_rent(space_number)}\nHouses cost ${self.get_house_cost(space_number)} each\nMortgage Vaue: ${self.get_mortgage_value(space_number)}\nCurrent Owner: {self.get_owner(space_number)}"
-    
              
     #Calculates and returns the amount of rent that's due when landing on that space.
     #Hotels, houses, railroad ownership, utility ownership, and fees are all taken into account.
@@ -107,14 +107,12 @@ class GameState:
                 hotel = self.checker(self.board.loc[space_number, "HotelRent"])
                 
             return house + hotel
-        
 
     def get_cell(self, space_number, column_name): #Returns the contents of a cell when given a space number(int) and a column name(string) 
         if column_name not in self.board.columns:
             print("Invalid column name.")
         else:
             return self.checker(self.board.loc[space_number, column_name])
-
 
     def get_space_number(self, space_name): #Give this method a SpaceName and it returns it's SpaceNumber
         dex = self.board[self.board["SpaceName"]==space_name].index.values
@@ -186,6 +184,22 @@ class GameState:
 
         
 class Player():
+    """A parent class that represents one Player of monopoly and their attributes;
+        HumanPlayer and ComputerPlayer are child classes that inherit from this 
+        class.
+    
+    Attributes:
+        name (string): the name of the player.
+        money (int): the amount of money the player has.
+        jail (boolean): whether the player is in jail or not.
+        props_owned (list of strings): a list of strings comprising the names of
+            each property the player owns.
+        jail_turn_counter (int): how long the player has been in jail.
+        position (int): what space number the player is on with respect to the
+            board.
+        jail_cards (int): number of get out of jail free cards a player has.
+    """
+    
     def __init__(self, name):
         self.name = name
         self.money = 1500
@@ -194,18 +208,32 @@ class Player():
         self.jail_turn_counter = 0
         self.position = 0
         self.jail_cards = 0
-
-    def turn():
-        """Take a turn.
-        
-        Args:
-            state (GameState): a snapshot of the current state of the game.      
-        Returns:
-            str: the player's guess (a letter or a word).
-        """
-        raise NotImplementedError
         
     def o_spaces(self, state, other):
+        """Written by Ady Weng.
+        Handles Player interactions with 'special' spaces like
+        Community Chest, Chance, and Income Tax.
+        
+        Args:
+            state (GameState): a GameState object that represents the board
+                and state of the game (e.g., what cards remain).
+            other (Player): a Player object that represents the other player.
+            
+        Side effects:
+            Prints what community chest or chance card a player has drawn.
+            Edits the Player's 'position' and 'money' attribute based on the
+                effects of the drawn card.
+            Prints the Player's current position and money following the
+                effects of the drawn card.
+            Edits the Player's 'jail' attribute based on the effects of the
+                drawn card.
+            Edits the opposing Player's 'money' attribute based on the effects 
+                of the drawn card.
+            Enables the Player to amend the 'props_owned' attribute by
+                allowing them to purchase some properties in accordance with 
+                a drawn card.
+        """
+        
         if state.get_cell(self.position, "SpaceName") == "Chance":
             card = state.get_chance()
             print(f"{self.name} has drawn: {card}.")
@@ -290,9 +318,6 @@ class Player():
                 self.jail = True
                 self.position = 10
                 print("Yeah, that's rough buddy :/")
-            elif card == "Make general repairs on all your property. For each house pay $25. For each hotel pay $100":
-                # Fix when houses and hotels
-                pass
             elif card == "Speeding fine $15":
                 self.money -= 15
             elif card == "Take a trip to Reading Railroad. If you pass Go, collect $200":
@@ -321,9 +346,6 @@ class Player():
             elif card == "It is your birthday. Collect $10 from the other player":
                 other.money -= 10
                 self.money += 10
-            elif card == "You are assessed for street repair. Pay $40 per house. $115 per hotel":
-                # Update when houses and hotels are done.
-                return None
             else:
                 amt = []
                 for i in card:
@@ -340,17 +362,20 @@ class Player():
         print(f"{self.name} is now on {state.get_cell(self.position, 'SpaceName')} and has ${self.money}.")
         
     def mp_check(self, state, col):
-        """Function to check whether a player has a monopoly over one color of
-        properties; or more than one of either railroads or utilities. Then, finds
-        the appropriate rent multiplier for the opposing player.
+        """Written by Ady Weng.
+        Function to check whether a player has a monopoly over one color of
+        properties.
 
         Args:
             player (Player): instance of Player class representing the player whose
                 property was landed on.
+            state (GameState): instance of the GameState class representing the
+                board and its current state.
             col (string): a string representing the color of the landed-on property.
 
         Returns:
-            int: rent multiplier for the player who landed on the property.
+            boolean: whether the Player has a monopoly over the color property
+                they are currently positioned on (true or false).
         """
         
         COLORS = {
@@ -487,13 +512,31 @@ class HumanPlayer(Player):
                     state.change_owner(self.position, "Bank")
                     print(f"{self.name} now has ${self.money}.")
                 elif ques != "N":
-                    print("Try again")
+                    print("Try again.")
                     ques = input("Would you like to sell your property? Y or N \n")
         # Player is in jail
         else:
             self.get_out_of_jail()
             
     def buy_hs(self, state):
+        """Written by Ady Weng.
+        A class for allowing the HumanPlayer to purchase properties.
+        
+        Args:
+            state (GameState): an instance of the GameState object representing
+                the board and its current state.
+        
+        Side effects:
+            Prints information concerning the prerequisites for buying hotels.
+            Edits the Player's 'money' attribute to reflect that a house or
+                hotel was purchased (when applicable).
+            Prints out how many houses/hotel a Player has on a property.
+            Prints out how much money a Player has following a purchase.
+            Prints out reasoning as to why a purchase may have been rejected.
+            Prints an "invalid input" statement when the program does not
+                recognize an input to a prompt.
+        """
+        
         print("Hotels replace houses on a property. You must have a house to buy a hotel.")
         which = input("Would you like to buy a house/house(s) for this property or a hotel? 1 for house, 2 for hotel. \n")
         if which == "1":
@@ -684,6 +727,23 @@ class ComputerPlayer(Player):
             self.get_out_of_jail()
             
     def buy_hs(self, state):
+        """Written by Ady Weng.
+        A class for allowing the ComputerPlayer to purchase properties.
+        
+        Args:
+            state (GameState): an instance of the GameState object representing
+                the board and its current state.
+        
+        Side effects:
+            Prints information concerning the prerequisites for buying hotels.
+            Edits the Player's 'money' attribute to reflect that a house or
+                hotel was purchased (when applicable).
+            Prints out how many houses/hotel a Player has on a property.
+            Prints out how much money a Player has following a purchase.
+            Prints out reasoning as to why a purchase may have been rejected.
+            Prints an "invalid input" statement when the program does not
+                recognize an input to a prompt.
+        """
 
         if self.difficulty == 0:
             ch = rand.randint(0, 1)
@@ -801,7 +861,18 @@ class ComputerPlayer(Player):
             print(f"{self.name} now has ${self.money}.")
 
 def Game(difficulty, playername):
+    """Written by Ady Weng.
+    A class enabling the game to be set up and run.
     
+    Args:
+        difficulty (int): how intelligent the ComputerPlayer will be (assumes
+            values of 0 or 1 for random and intelligent, respectively).
+        playername (string): the name of the HumanPlayer.
+        
+    Side effects:
+        Prints which player has won or tied.
+    """
+
     rounds = 0
     
     g = GameState()
