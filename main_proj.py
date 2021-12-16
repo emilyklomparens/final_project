@@ -40,7 +40,7 @@ class GameState:
             return f"{self.get_space_name(space_number)}\nRent: $25\nIf 2 Railroads are owned: $50\nIf 3 Railroads are owned: $100\nIf 4 Railroads are owned: $200\nMortgage Value: $100\nCurrent Owner: {self.get_owner(space_number)}"
         elif space_number in [4, 38]:#Fees
             return f"{self.get_space_name(space_number)}\nPay ${self.get_fee(space_number)}"
-        elif self.checker(self.get_price(space_number)) == " NaN: This cell doesn't have a value :( ":#Every other space
+        elif self.checker(self.get_price(space_number)) == "NaN":#Every other space
             return f"{self.get_space_name(space_number)}"
         else:#Properties
             return f"{self.get_space_name(space_number)} ({self.get_color(space_number)})\nRent: ${self.get_rent(space_number)}\nWith 1 House: ${self.get_1_house_rent(space_number)}\nWith 2 Houses: ${self.get_2_house_rent(space_number)}\nWith 3 Houses: ${self.get_3_house_rent(space_number)}\nWith 4 Houses: ${self.get_4_house_rent(space_number)}\nWith Hotel: ${self.get_hotel_rent(space_number)}\nHouses cost ${self.get_house_cost(space_number)} each\nMortgage Vaue: ${self.get_mortgage_value(space_number)}\nCurrent Owner: {self.get_owner(space_number)}"
@@ -89,18 +89,24 @@ class GameState:
         
         else: #Calculates normal property rent
             house_num = self.board.loc[space_number, "NumOfHouses"]
-            if house_num == 0:
-                return self.checker(self.board.loc[space_number, "Rent"])
+            hotel_num = self.board.loc[space_number, "NumOfHotels"]
+            house = 0
+            hotel = 0
+            if house_num == 0 and hotel_num == 0:
+                house = self.checker(self.board.loc[space_number, "Rent"])
             elif house_num == 1:
-                return self.checker(self.board.loc[space_number, "1HouseRent"])
+                house = self.checker(self.board.loc[space_number, "1HouseRent"])
             elif house_num == 2:
-                return self.checker(self.board.loc[space_number, "2HouseRent"])
+                house = self.checker(self.board.loc[space_number, "2HouseRent"])
             elif house_num == 3:
-                return self.checker(self.board.loc[space_number, "3HouseRent"])
+                house = self.checker(self.board.loc[space_number, "3HouseRent"])
             elif house_num == 4:
-                return self.checker(self.board.loc[space_number, "4HouseRent"])
-            elif house_num == 5:
-                return self.checker(self.board.loc[space_number, "HotelRent"])
+                house = self.checker(self.board.loc[space_number, "4HouseRent"])
+            
+            if hotel_num == 1:
+                hotel = self.checker(self.board.loc[space_number, "HotelRent"])
+                
+            return house + hotel
         
 
     def get_cell(self, space_number, column_name): #Returns the contents of a cell when given a space number(int) and a column name(string) 
@@ -121,25 +127,30 @@ class GameState:
         return self.board.loc[space_number, "Owner"]
     
     def change_owner(self, space_number, player_name): #Changes the owner of the property to the given name. Owner is "bank" by default
-        if self.checker(self.board.loc[space_number, "Owner"]) == " NaN: This cell doesn't have a value :( ":
+        if self.checker(self.board.loc[space_number, "Owner"]) == "NaN":
             print("NaN: This space cannot have an owner, no changes were made.")
         else:
             self.board.loc[space_number, "Owner"] = player_name
-    
     
     #When someone buys a house, call this to add to the property's "NumOfHouses"
     #if removing a house, call with a negative number to subtract
     # 5 houses = a hotel
     def change_houses(self, space_number, number_of_houses): 
         house_num =self.board.loc[space_number, "NumOfHouses"]
-        if self.checker(house_num) == " NaN: This cell doesn't have a value :( ":
+        if self.checker(house_num) == "NaN":
             print("NaN: This space cannot be given houses, no changes were made.")
         elif (house_num + number_of_houses) > 5 or (house_num + number_of_houses) < 0:
             print("Invalid number of houses: Properties can only have 0-5 houses, no changes were made.\n")
         else:
             self.board.loc[space_number, "NumOfHouses"] += number_of_houses
     
-
+    def change_hotels(self, space_number, number_of_hotels): 
+        hotel_num =self.board.loc[space_number, "NumOfHotels"]
+        if self.checker(hotel_num) == "NaN":
+            print("NaN: This space cannot be given hotel, no changes were made.")
+        else:
+            self.board.loc[space_number, "NumOfHotels"] += number_of_hotels
+    
     def get_chance(self): #Returns a random Chance card
         if len(self.chance) == 0:
             self.chance = self.used_chance
@@ -155,7 +166,6 @@ class GameState:
         card = self.community_chest.pop(self.community_chest.index(rand.choice(self.community_chest)))
         self.used_community_chest.append(card)
         return card
-        
 
     def add_player(self, player_name): #Adds a player to the list of current players
         if player_name == "bank":
@@ -166,10 +176,9 @@ class GameState:
         self.current_players.pop(self.current_players.index(player_name))
         self.bankrupt_players.append(player_name)
     
-    
     def checker(self, cell): #Won't be called outside of this class. This is used to prevent errors.
         if isinstance(cell, str) == False and isnan(cell):
-            return " NaN: This cell doesn't have a value :( "
+            return "NaN"
         elif isinstance(cell, float):
             return int(cell)
         else:
@@ -228,16 +237,20 @@ class Player():
                     other.money += 2 * state.get_current_rent(self.position)
                 else:
                     print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
-                    buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
-                    if (buy == 'Y'):
-                        self.props_owned.append(state.get_cell(self.position, "SpaceName"))
-                        self.money -= int(state.get_cell(self.position, "Price"))
-                        state.change_owner(self.position, self.name)
-                    elif (buy == 'N'):
-                        print ("The choice is made to not purchase")
-                    else:
-                        print("Try again")
+                    if self.name != "Computer":
                         buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
+                        if (buy == 'Y'):
+                            self.props_owned.append(state.get_cell(self.position, "SpaceName"))
+                            self.money -= int(state.get_cell(self.position, "Price"))
+                            state.change_owner(self.position, self.name)
+                    else:
+                        ran = rand.randint(0, 1)
+                        if ran == 0:
+                            self.props_owned.append(state.get_cell(self.position, "SpaceName"))
+                            self.money -= int(state.get_cell(self.position, "Price"))
+                            state.change_owner(self.position, self.name)
+                        else:
+                            print("Computer chose not to buy.")
             elif card == "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown":
                 sn = self.position
                 while "Electric" not in state.get_cell(sn, "SpaceName") and "Water" not in state.get_cell(sn, "SpaceName"):
@@ -253,16 +266,20 @@ class Player():
                     other.money += mt * 10
                 else:
                     print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
-                    buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
-                    if (buy == 'Y'):
-                        self.props_owned.append(state.get_cell(self.position, "SpaceName"))
-                        self.money -= int(state.get_cell(self.position, "Price"))
-                        state.change_owner(self.position, self.name)
-                    elif (buy == 'N'):
-                        print ("The choice is made to not purchase")
-                    else:
-                        print("Try again")
+                    if self.name != "Computer":
                         buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
+                        if (buy == 'Y'):
+                            self.props_owned.append(state.get_cell(self.position, "SpaceName"))
+                            self.money -= int(state.get_cell(self.position, "Price"))
+                            state.change_owner(self.position, self.name)
+                    else:
+                        ran = rand.randint(0, 1)
+                        if ran == 0:
+                            self.props_owned.append(state.get_cell(self.position, "SpaceName"))
+                            self.money -= int(state.get_cell(self.position, "Price"))
+                            state.change_owner(self.position, self.name)
+                        else:
+                            print("Computer chose not to buy.")
             elif card == "Bank pays you dividend of $50":
                 self.money += 50
             elif card == "Get Out of Jail Free":
@@ -321,6 +338,63 @@ class Player():
             self.money -= 200
 
         print(f"{self.name} is now on {state.get_cell(self.position, 'SpaceName')} and has ${self.money}.")
+        
+    def mp_check(self, state, col):
+        """Function to check whether a player has a monopoly over one color of
+        properties; or more than one of either railroads or utilities. Then, finds
+        the appropriate rent multiplier for the opposing player.
+
+        Args:
+            player (Player): instance of Player class representing the player whose
+                property was landed on.
+            col (string): a string representing the color of the landed-on property.
+
+        Returns:
+            int: rent multiplier for the player who landed on the property.
+        """
+        
+        COLORS = {
+            "brown": 2,
+            "lightblue": 3,
+            "pink": 3,
+            "orange": 3,
+            "red": 3,
+            "yellow": 3,
+            "green": 3,
+            "darkblue": 2,
+        }
+        
+        col_count = {
+            "brown": 0,
+            "lightblue": 0,
+            "pink": 0,
+            "orange": 0,
+            "red": 0,
+            "yellow": 0,
+            "green": 0,
+            "darkblue": 0,
+        }
+        
+        self.col_mp = {
+            "brown": False,
+            "lightblue": False,
+            "pink": False,
+            "orange": False,
+            "red": False,
+            "yellow": False,
+            "green": False,
+            "darkblue": False,            
+        }
+        
+        if col != "NaN":
+            for i in self.props_owned:
+                if state.get_cell(state.get_space_number(i), "Color") == col:
+                    col_count[col] += 1
+                
+            if COLORS[col] == col_count[col]:
+                self.col_mp[col] = True
+            
+            return self.col_mp[col]
 
 class HumanPlayer(Player):
     
@@ -351,6 +425,11 @@ class HumanPlayer(Player):
                 print(f"{self.name} now has ${self.money}.")
             elif (state.get_cell(self.position, "Owner") == self.name):
                 print(f"{self.name} already own this property.")
+                if self.mp_check(state, state.get_cell(self.position, "Color")) == True:
+                    buy = input("Would you like to buy a house or hotel for this property? Y or N? \n")
+                    if buy == 'Y':
+                        self.buy_hs(state)
+                        print(f"{self.name} now has ${self.money}.")
             elif (state.get_cell(self.position, "Owner") == "bank"):
                 print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
                 buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
@@ -359,10 +438,16 @@ class HumanPlayer(Player):
                     self.money -= int(state.get_cell(self.position, "Price"))
                     state.change_owner(self.position, self.name)
                     print(f"{self.name} now has ${self.money}.")
+                    if state.get_cell(self.position, "Color") != "NaN":
+                        if self.mp_check(state, state.get_cell(self.position, "Color")) == True:
+                            buy = input("Would you like to buy a house or hotel for this property? Y or N? \n")
+                            if buy == 'Y':
+                                self.buy_hs(state)
+                                print(f"{self.name} now has ${self.money}.")
                 elif (buy == 'N'):
-                        print ("The choice is made to not purchase")
+                        print ("The choice is made to not purchase.")
                 else:
-                    print("Try again")
+                    print("Try again.")
                     buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
             else:
                 if (state.get_cell(self.position, "SpaceName") == "Community Chest" or state.get_cell(self.position, "SpaceName") == "Chance" or
@@ -387,6 +472,36 @@ class HumanPlayer(Player):
 
         else:
             self.get_out_of_jail()
+            
+    def buy_hs(self, state):
+        print("Hotels replace houses on a property. You must have a house to buy a hotel.")
+        which = input("Would you like to buy a house/house(s) for this property or a hotel? 1 for house, 2 for hotel. \n")
+        if which == "1":
+            num = input(f"How many houses would you like to buy (1-4)? House Price: {state.get_cell(self.position, 'HouseCost')} \n")
+            calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
+            confirm = input(f"Are you sure you'd like to buy {num} houses for ${calc_price} Y/N? \n")
+            if confirm == 'Y' and self.money - calc_price > 0 and int(num) < 5:
+                state.change_houses(self.position, int(num))
+                self.money -= calc_price
+                print(f"You now have {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
+                print(f"{self.name} now has ${self.money}.")
+            else:
+                print("You don't have enough money; alternatively, too many houses! \n")
+                pass
+        elif which == "2":
+            if state.get_cell(self.position, "NumOfHouses") > 0 and state.get_cell(self.position, "NumOfHotels") == 0:
+                confirm = input(f"Are you sure you'd like to buy a hotel for ${state.get_cell(self.position, 'HouseCost')} Y/N? \n")
+                if confirm == "Y":
+                    state.change_hotels(self.position, 1)
+                    self.money -= state.get_cell(self.position, 'HouseCost')
+                    state.change_houses(self.position, -1)
+                    print(f"You now have a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
+                    print(f"{self.name} now has ${self.money}.")
+            else:
+                print("Not enough houses; alternatively, only one hotel allowed! \n")
+                pass
+        else:
+            print("Invalid input!")
     
     def get_out_of_jail(self):
         
@@ -484,11 +599,14 @@ class ComputerPlayer(Player):
             #Check if sold
             if (state.get_cell(self.position, "Owner") == other.name):
                 print(f"{other.name} owns this property, {self.name} owes ${state.get_current_rent(self.position)}.")
-                self.money -= state.get_current_rent(self.position)
-                other.money += state.get_current_rent(self.position)
+                self.money -= int(state.get_current_rent(self.position))
+                other.money += int(state.get_current_rent(self.position))
                 print(f"{self.name} now has ${self.money}.")
             elif (state.get_cell(self.position, "Owner") == self.name):
                 print(f"{self.name} already own this property.")
+                if state.get_cell(self.position, "Color") != "NaN":
+                    if self.mp_check(state, state.get_cell(self.position, "Color")) == True:
+                        self.buy_hs(state)
             elif (state.get_cell(self.position, "Owner") == "bank"):
                 print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.") 
                 if self.difficulty == 0:
@@ -499,6 +617,7 @@ class ComputerPlayer(Player):
                         self.money -= int(state.get_cell(self.position, "Price"))
                         state.change_owner(self.position, self.name)
                         print(f"{self.name} now has ${self.money}.")
+                        self.buy_hs(state)
                     else:
                         print(f"{self.name} did not buy this property.")
                 elif self.difficulty == 1:               
@@ -508,6 +627,7 @@ class ComputerPlayer(Player):
                         self.money -= int(state.get_cell(self.position, "Price"))
                         state.change_owner(self.position, self.name)
                         print(f"{self.name} now has ${self.money}.")
+                        self.buy_hs(state)
                     else:
                         print(f"{self.name} did not buy this property.")
                             
@@ -534,6 +654,50 @@ class ComputerPlayer(Player):
                     print(f"""{state.get_cell(self.position, "Owner")} is the new property owner""")
         else:
             self.get_out_of_jail()
+            
+    def buy_hs(self, state):
+
+        if self.difficulty == 0:
+            ch = rand.randint(0, 1)
+            if ch == 0:
+                num = rand.randint(1, 4)
+                calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
+                if self.money - calc_price > 0 and int(num) < 5:
+                    state.change_houses(self.position, int(num))
+                    self.money -= calc_price
+                    print(f"Computer bought {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
+                    print(f"{self.name} now has ${self.money}.")
+            elif ch == 1:
+                if int(state.get_cell(self.position, "NumOfHouses")) > 0 and int(state.get_cell(self.position, "NumOfHotels")) == 0:
+                    state.change_hotels(self.position, 1)
+                    self.money -= state.get_cell(self.position, 'HouseCost')
+                    state.change_houses(self.position, -1)
+                    print(f"Computer bought a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
+                    print(f"{self.name} now has ${self.money}.")
+                else:
+                    print("Computer doesn't have enough money; alternatively, too many houses! \n")
+                pass
+        elif self.difficulty == 1:
+            if int(state.get_cell(self.position, "NumOfHouses")) > 0 and int(state.get_cell(self.position, "NumOfHotels")) == 0:
+                if int(state.get_cell(self.position, "NumOfHouses")) == 4:
+                    state.change_hotels(self.position, 1)
+                    self.money -= int(state.get_cell(self.position, 'HouseCost'))
+                    state.change_houses(self.position, -1)
+                    print(f"Computer bought a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
+                    print(f"{self.name} now has ${self.money}.")
+                else:
+                    num = rand.randint(1, 4)
+                    calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
+                    if self.money - calc_price > 0 and int(num) < 5:
+                        state.change_houses(self.position, int(num))
+                        self.money -= calc_price
+                        print(f"Computer bought {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
+                        print(f"{self.name} now has ${self.money}.")
+            else:
+                print("Not enough houses; alternatively, only one hotel allowed! \n")
+                pass
+        else:
+            print("Invalid input!")
         
     def get_out_of_jail(self):
         """
