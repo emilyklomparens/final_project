@@ -323,47 +323,68 @@ class Player():
         print(f"{self.name} is now on {state.get_cell(self.position, 'SpaceName')} and has ${self.money}.")
 
 class HumanPlayer(Player):
+    """ This class represents a Human Player of the game.
+    
+        Args: 
+    """
     
     def turn(self, state, other):
+        """
+        Written by Emily Klomparens. 
+        This method represents one player turn.
+        
+        Args:
+        state (object): the state of the game
+        other (object): the other player of the game
+                        
+        Side effects:
+        Changes attributes of both players depending on actions in the turn.
+        """
+        # Checks if player is in jail at the start of the turn
         if (self.jail == False):
             print(f"{self.name}, press enter to roll.")
             input()
+            # Simulates one roll
             roll1 = rand.randint(1,6)
             roll2 = rand.randint(1,6)
             roll =  roll1 + roll2
+            # Prints roll outcome
             print(f"{self.name} has has ${self.money}.")
             print (f"{self.name} rolled {roll}.")
-            
-            #Calculate new postion
+            #Calculates new postion
             if self.position + roll > 39:
                 self.position = (self.position + roll) % 39
                 self.money += 200
             else:
                 self.position += roll
             print (f"{self.name} landed on {state.get_cell(self.position, 'SpaceName')}.\n")
-            
-            #Check type of space
+            # Checks type of space
+            # Space is owned by opponent
             if (state.get_cell(self.position, "Owner") == other.name):
                 print(f"{other.name} owns this property, you owe ${state.get_current_rent(self.position)}. \nPress enter to pay rent.")
                 input()
                 self.money -= state.get_current_rent(self.position)
                 other.money += state.get_current_rent(self.position)
                 print(f"{self.name} now has ${self.money}.")
+            # Space is already owned by the player 
             elif (state.get_cell(self.position, "Owner") == self.name):
                 print(f"{self.name} already own this property.")
+            # Space is owned by the bank and for sale 
             elif (state.get_cell(self.position, "Owner") == "bank"):
                 print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
                 buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
+                # The player buys the property landed on
                 if (buy == 'Y'):
                     self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                     self.money -= int(state.get_cell(self.position, "Price"))
                     state.change_owner(self.position, self.name)
                     print(f"{self.name} now has ${self.money}.")
                 elif (buy == 'N'):
-                        print ("The choice is made to not purchase")
+                        print ("The choice is made to not purchase.")
                 else:
                     print("Try again")
                     buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
+            # Space is special
             else:
                 if (state.get_cell(self.position, "SpaceName") == "Community Chest" or state.get_cell(self.position, "SpaceName") == "Chance" or
                   state.get_cell(self.position, "SpaceName") == "Income Tax"):
@@ -374,7 +395,7 @@ class HumanPlayer(Player):
                 elif (state.get_cell(self.position, "SpaceName") == "Free Parking" or state.get_cell(self.position, "SpaceName") == "Jail"):
                     pass
             
-            #sell your own property to the bank
+            # Sell your own property to the bank: Written by Anshu 
             if (state.get_cell(self.position, "Owner")== self.name) and (state.get_cell(self.position, "MortgageValue") != None):
                 ques = input("Would you like to sell your property? Y or N \n")
                 if ques == "Y":
@@ -384,21 +405,30 @@ class HumanPlayer(Player):
                 elif ques != "N":
                     print("Try again")
                     ques = input("Would you like to sell your property? Y or N \n")
-
+        # Player is in jail
         else:
             self.get_out_of_jail()
     
     def get_out_of_jail(self):
-        
+        """
+        Written by Emily Klomparens. 
+        This method represents being in jail. The player interacts with this method
+        until released from jail. The player has the option to use a get out of jail free card 
+        if avaiable, pay the $50 fine, or attempt to roll doubles. If the player does not 
+        roll doubles in 3 turns the player has to print the fine automatically.
+    
+        Side effects:
+        Changes attributes of both players depending on actions chosen.
+        """
         print(f"\n{self.name} is in jail.\nPress enter.")
         input()
         
-        # 3 options
+        # 3 options if player has a get out of jail free card
         if (self.jail_cards >= 1):
             action = input(f"You have 3 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles. \n3. Use a Get Out Of Jail Free Card. (You have {self.jail_cards} Get Out Of Jail Free Card(s))\nEnter 1, 2, or 3\n")
+        # 2 options otherwise
         else:
-            action = input(f"You have 2 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles.\nEnter 1 or 2.\n")
-            
+            action = input(f"You have 2 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles.\nEnter 1 or 2.\n")  
         # Pay fine
         if (action == '1'):
             print(f"You will pay the $50 fine and are now out of jail.")
@@ -406,8 +436,7 @@ class HumanPlayer(Player):
             self.jail_turn_counter = 0
             self.money -= 50
             print(f"{self.name} now has ${self.money}.")
-            
-        # Roll
+        # Roll doubles
         elif (action == '2'):
             print("Press enter to roll. You have to roll doubles to get out of jail.")
             input()
@@ -415,10 +444,12 @@ class HumanPlayer(Player):
             roll2 = rand.randint(1,6)
             print(f"You rolled a {roll1} and a {roll2} \n")
             self.jail_turn_counter += 1
+            # Player rolls doubles
             if (roll1 == roll2):
                 print(f"You rolled doubles! You are now out of jail.")
                 self.jail = False
                 self.jail_turn_counter = 0
+            # Player does not roll doubles
             else: 
                 print(f"You did not roll doubles. You are still in jail. You have {3-self.jail_turn_counter} attempts to roll left.")
                 if (self.jail_turn_counter == 3):
@@ -426,8 +457,7 @@ class HumanPlayer(Player):
                     self.jail = False
                     self.jail_turn_counter = 0
                     self.money -= 50
-                    print(f"{self.name} now has ${self.money}.")
-                    
+                    print(f"{self.name} now has ${self.money}.")        
         # Use get out of jail free card
         else:
             print(f"You are using your Get Out Of Jail Free Card.")
@@ -436,7 +466,6 @@ class HumanPlayer(Player):
             print(f"You now have {self.jail_cards} Get Out Of Jail Free Card(s)")
             self.jail_turn_counter = 0
 
-#import random
 class ComputerPlayer(Player):
     """
     It represents the game status of a computer player.
