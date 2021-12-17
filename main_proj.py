@@ -8,6 +8,20 @@ from argparse import ArgumentParser
 import sys
 
 class GameState:
+    """Written by Brian McMahon.
+    A class that represents the Monopoly board, property cards, and chance/community chest cards. 
+    It uses an updatable pandas dataframe to store all of this information.
+    
+    Attributes:
+        board(Pandas DataFrame): An updatable Pandas DataFrame imported from an excel document. 
+            This is used to hold all information relating to the Monopoly board and property cards.
+        current_players(list of strings): Used to store the names of all the players currently playing.
+        bankrupt_players(list of strings): Used to store the names of all player who have lost.
+        chance(list of strings): A list of every chance card
+        used_chance(list of strings): A list of chance cards that have been used this game.
+        community_chest(list of strings): A list of every community chest card.
+        used_community_chest(list of strings): A list of community chest cards that have been used this game.
+    """ 
     def __init__(self):
         self.board = pd.read_csv("board.csv")
         
@@ -16,40 +30,78 @@ class GameState:
         self.bankrupt_players = []
         
         #List of Chance cards, used cards are popped into the "used" list and returned when all cards have been used.
-        self.chance = ["Advance to Boardwalk", "Advance to Go (Collect $200)", "Advance to Illinois Avenue. If you pass Go, collect $200", 
+        self.chance = ["Advance to Boardwalk", "Advance to Go (Collect $200)", 
+                       "Advance to Illinois Avenue. If you pass Go, collect $200", 
                        "Advance to St. Charles Place. If you pass Go, collect $200", 
-                       "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled", 
-                       "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which they are otherwise entitled", 
-                       "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown", 
-                       "Bank pays you dividend of $50", "Get Out of Jail Free", "Go Back 3 Spaces", "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200", 
-                       "Speeding fine $15", "Take a trip to Reading Railroad. If you pass Go, collect $200", "You have been elected Chairman of the Board. Pay other player $50", 
+                       "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, "\
+                           "pay owner twice the rental to which they are otherwise entitled", 
+                       "Advance to the nearest Railroad. If unowned, you may buy it from the Bank. If owned, "\
+                           "pay owner twice the rental to which they are otherwise entitled", 
+                       "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, "\
+                           "throw dice and pay owner a total ten times amount thrown", 
+                       "Bank pays you dividend of $50", "Get Out of Jail Free", "Go Back 3 Spaces", 
+                       "Go to Jail. Go directly to Jail, do not pass Go, do not collect $200", 
+                       "Speeding fine $15", "Take a trip to Reading Railroad. If you pass Go, collect $200", 
+                       "You have been elected Chairman of the Board. Pay other player $50", 
                        "Your building loan matures. Collect $150"]
         self.used_chance = []
         
         #List of community chest cards, used cards are popped into the "used" list and returned when all cards have been used.
         self.community_chest = ["Bank error in your favor. Collect $200"]
-        self.used_community_chest = ["Advance to Go (Collect $200)", "Bank error in your favor. Collect $200", "Doctor’s fee. Pay $50", "From sale of stock you get $50", 
-                                "Get Out of Jail Free", "Go to Jail. Go directly to jail, do not pass Go, do not collect $200", "Holiday fund matures. Collect $100", 
-                                "Income tax refund. Collect $20", "It is your birthday. Collect $10 from the other player", "Life insurance matures. Collect $100", 
-                                "Pay hospital fees of $100", "Pay school fees of $50", "Collect $25 consultancy fee", "You have won second prize in a beauty contest. Collect $10",
+        self.used_community_chest = ["Advance to Go (Collect $200)", "Bank error in your favor. Collect $200", 
+                                     "Doctor’s fee. Pay $50", "From sale of stock you get $50", 
+                                "Get Out of Jail Free", "Go to Jail. Go directly to jail, do not pass Go, do not collect $200", 
+                                "Holiday fund matures. Collect $100", 
+                                "Income tax refund. Collect $20", "It is your birthday. Collect $10 from the other player", 
+                                "Life insurance matures. Collect $100", 
+                                "Pay hospital fees of $100", "Pay school fees of $50", "Collect $25 consultancy fee", 
+                                "You have won second prize in a beauty contest. Collect $10",
                                 "You inherit $100"]
         
-    def get_property_overview(self, space_number): #Returns an fstring that represents a property card
+        
+    def get_property_overview(self, space_number):
+        """Written by Brian McMahon.
+        Accesses the DataFrame and returns an fstring representation of a property card.
+        
+        Args: 
+            space_number(int): The space number of the property whos card will be returned.
+        
+        Returns:
+            (string): An fstring representation of a property card.
+        """
         if space_number in [12, 28]:#Utilities
-            return f"{self.get_space_name(space_number)}\nIf one \"Utilitiy\" is owned rent is 4 times amount shown on dice.\nIf both \"Utilities\" are owned rent is 10 times amount shown on dice.\nMortgage Value: $75\nCurrent Owner: {self.get_owner(space_number)}"
+            return f"{self.get_space_name(space_number)}\nIf one \"Utilitiy\" is owned rent is 4 times amount shown on "\
+                "dice.\nIf both \"Utilities\" are owned rent is 10 times amount shown on dice.\nMortgage Value: $75\nCurrent "\
+                    "Owner: {self.get_owner(space_number)}"
         elif space_number in [5,15,25,35]:#Railroad
-            return f"{self.get_space_name(space_number)}\nRent: $25\nIf 2 Railroads are owned: $50\nIf 3 Railroads are owned: $100\nIf 4 Railroads are owned: $200\nMortgage Value: $100\nCurrent Owner: {self.get_owner(space_number)}"
+            return f"{self.get_space_name(space_number)}\nRent: $25\nIf 2 Railroads are owned: $50\nIf 3 Railroads are owned: "\
+                        "$100\nIf 4 Railroads are owned: $200\nMortgage Value: $100\nCurrent Owner: {self.get_owner(space_number)}"
         elif space_number in [4, 38]:#Fees
             return f"{self.get_space_name(space_number)}\nPay ${self.get_fee(space_number)}"
         elif self.checker(self.get_price(space_number)) == "NaN":#Every other space
             return f"{self.get_space_name(space_number)}"
         else:#Properties
-            return f"{self.get_space_name(space_number)} ({self.get_color(space_number)})\nRent: ${self.get_rent(space_number)}\nWith 1 House: ${self.get_1_house_rent(space_number)}\nWith 2 Houses: ${self.get_2_house_rent(space_number)}\nWith 3 Houses: ${self.get_3_house_rent(space_number)}\nWith 4 Houses: ${self.get_4_house_rent(space_number)}\nWith Hotel: ${self.get_hotel_rent(space_number)}\nHouses cost ${self.get_house_cost(space_number)} each\nMortgage Vaue: ${self.get_mortgage_value(space_number)}\nCurrent Owner: {self.get_owner(space_number)}"
-             
-    #Calculates and returns the amount of rent that's due when landing on that space.
-    #Hotels, houses, railroad ownership, utility ownership, and fees are all taken into account.
-    #include a dice roll as the third param if calculating utility rent
+            return f"{self.get_space_name(space_number)} ({self.get_color(space_number)})\nRent: "\
+                        "${self.get_rent(space_number)}\nWith 1 House: ${self.get_1_house_rent(space_number)}\nWith 2 Houses: "\
+                        "${self.get_2_house_rent(space_number)}\nWith 3 Houses: ${self.get_3_house_rent(space_number)}\nWith 4 "\
+                        "Houses: ${self.get_4_house_rent(space_number)}\nWith Hotel: ${self.get_hotel_rent(space_number)}\nHouses "\
+                        "cost ${self.get_house_cost(space_number)} each\nMortgage Vaue: ${self.get_mortgage_value(space_number)}\nCu"\
+                        "rrent Owner: {self.get_owner(space_number)}"
+   
     def get_current_rent(self, space_number, dice_roll=0):
+        """Written by Brian McMahon.
+        Calculates and returns the amount of rent that's due when landing on a specified space.
+        Hotels, houses, railroad ownership, utility ownership, and fees are all taken into account.
+        
+        Args:
+            space_number(int): The space number of the property whos rent will be returned.
+            dice_roll(int): This optional arg represents the dice roll needed when calculating utility rent.
+                If it equals 0, it's not used.
+                
+        Returns:
+            (int): The amount of rent owed
+            (string): If there is not rent to return, it returns a string.
+        """
         if space_number in [12, 28]:#Calculates utility rent
             if dice_roll == 0:
                 return "A dice roll(int) needs to be included as a second parameter to calculate utility rent."
@@ -108,13 +160,37 @@ class GameState:
                 
             return house + hotel
 
-    def get_cell(self, space_number, column_name): #Returns the contents of a cell when given a space number(int) and a column name(string) 
+    def get_cell(self, space_number, column_name): 
+        """Written by Brian McMahon.
+        Fetches the contents of a cell in the DataFrame based on a given space number and a column name.
+        
+        Args:
+            space_number(int): The space number of the cell to be returned.
+            column_name(string): The name of the column with the needed cell.
+            
+        Returns:
+            (int): Returns an int if the desired cell is an int or a float.
+            (string): Returns a string if desired cell is a string or if its empty.
+            
+        Side effects:
+            Prints a message if the given column name is spelled wrong, for testing.
+        """
         if column_name not in self.board.columns:
             print("Invalid column name.")
         else:
             return self.checker(self.board.loc[space_number, column_name])
 
-    def get_space_number(self, space_name): #Give this method a SpaceName and it returns it's SpaceNumber
+    def get_space_number(self, space_name): 
+        """Written by Brian McMahon.
+        Takes the name of a space and returns it's space_number.
+        
+        Args:
+            space_name(string): The name of the property whos number while be returned.
+            
+        Returns:
+            (int): The properties space_number
+            (list of int): For multiple spaces with same name, returns all space numbers.
+        """
         dex = self.board[self.board["SpaceName"]==space_name].index.values
         if len(dex) > 2:
             return list(dex)
@@ -122,18 +198,47 @@ class GameState:
             return int(dex)
         
     def get_owner(self, space_number):
-        return self.board.loc[space_number, "Owner"]
+        """Written by Brian McMahon.
+        Fetches name of the owner of the property at space_number.
+        
+        Args:
+            space_number(int): The space number of the property whos owner name will be returned.
+            
+        Returns:
+            (string): The name of the owner of the property.
+        """
+        return self.checker(self.board.loc[space_number, "Owner"])
     
-    def change_owner(self, space_number, player_name): #Changes the owner of the property to the given name. Owner is "bank" by default
+    def change_owner(self, space_number, player_name): 
+        """Written by Brian McMahon.
+        Changes the owner of the property in the DataFrame to the given name, owner is "bank" by default.
+        
+        Args:
+            space_number(int): The space number of the property whos owner name will be changed.
+            player_name(string): The name to change the owner value to.
+            
+        Side effects:
+            Changes a value inside the board attribute.
+            Prints a message if the cell is empty.
+        """
         if self.checker(self.board.loc[space_number, "Owner"]) == "NaN":
             print("NaN: This space cannot have an owner, no changes were made.")
         else:
             self.board.loc[space_number, "Owner"] = player_name
-    
-    #When someone buys a house, call this to add to the property's "NumOfHouses"
-    #if removing a house, call with a negative number to subtract
-    # 5 houses = a hotel
-    def change_houses(self, space_number, number_of_houses): 
+        
+    def change_houses(self, space_number, number_of_houses):
+        """Written by Brian McMahon.
+        Alters the value in the DataFrame of the number of houses.
+            If removing houses, call with negative number.
+            5 houses equals 1 hotel
+        Args:
+            space_number(int): The space number of the property.
+            number_of_houses(int): The number of houses to be added or removed
+            
+        Side effects:
+            Changes a value inside the board attribute.
+            Prints a message if the cell is empty.
+        """ 
         house_num =self.board.loc[space_number, "NumOfHouses"]
         if self.checker(house_num) == "NaN":
             print("NaN: This space cannot be given houses, no changes were made.")
@@ -141,15 +246,18 @@ class GameState:
             print("Invalid number of houses: Properties can only have 0-5 houses, no changes were made.\n")
         else:
             self.board.loc[space_number, "NumOfHouses"] += number_of_houses
-    
-    def change_hotels(self, space_number, number_of_hotels): 
-        hotel_num =self.board.loc[space_number, "NumOfHotels"]
-        if self.checker(hotel_num) == "NaN":
-            print("NaN: This space cannot be given hotel, no changes were made.")
-        else:
-            self.board.loc[space_number, "NumOfHotels"] += number_of_hotels
-    
-    def get_chance(self): #Returns a random Chance card
+ 
+    def get_chance(self): 
+        """Written by Brian McMahon.
+        Fetches a random Chance card and moves card to the used_chance list
+        
+        Returns:
+            (string): The card's text
+            
+        Side effects:
+            Removes a card from the chance attribute
+            Adds a card to the used_chance attribute
+        """
         if len(self.chance) == 0:
             self.chance = self.used_chance
             self.used_chance = []
@@ -157,7 +265,17 @@ class GameState:
         self.used_chance.append(card)
         return card
     
-    def get_community_chest(self): #Returns a random Community Chest card
+    def get_community_chest(self): 
+        """Written by Brian McMahon.
+        Fetches a random Community Chest card and moves card to the used list.
+        
+        Returns:
+            (string): The card's text
+            
+        Side effects:
+            Removes a card from the community_chest attribute
+            Adds a card to the used_community_chest attribute
+        """
         if len(self.community_chest) == 0:
             self.community_chest = self.used_community_chest
             self.used_community_chest = []
@@ -165,16 +283,46 @@ class GameState:
         self.used_community_chest.append(card)
         return card
 
-    def add_player(self, player_name): #Adds a player to the list of current players
+    def add_player(self, player_name): 
+        """Written by Brian McMahon.
+        Adds a player to the list of current players
+        
+        Args:
+            player_name(string): The player name to be added
+        
+        Side effects:
+            Adds a string to the current_player attribute
+            Prints a message if the added name is "bank"
+        """
         if player_name == "bank":
             print("Player name cannot be \"bank\"")
         self.current_players.append(player_name)
         
-    def bankrupt_player(self, player_name): #Moves a player from the current player list to the bankrupt player list.
+    def bankrupt_player(self, player_name): 
+        """Written by Brian McMahon.
+        Moves a player from the current player list to the bankrupt player list.
+        
+        Args:
+            player_name(string): The player name to be added
+        
+        Side effects:
+            Removes a string from the current_player attribute
+            Adds a string to the bankrupt_player attribute
+        """
         self.current_players.pop(self.current_players.index(player_name))
         self.bankrupt_players.append(player_name)
     
-    def checker(self, cell): #Won't be called outside of this class. This is used to prevent errors.
+    def checker(self, cell):
+        """Written by Brian McMahon.
+        A method exclusively called by other methods to prevent NaN errors when trying to access empty cells
+        
+        Args:
+            cell(string, int, float, or NaN): The value of a given cell
+            
+        Returns:
+            (int): The cell value passed in
+            (string): Either the cell value passed in or "NaN" if it's empty
+        """
         if isinstance(cell, str) == False and isnan(cell):
             return "NaN"
         elif isinstance(cell, float):
@@ -267,7 +415,7 @@ class Player():
                     print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
                     if self.name != "Computer":
                         buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
-                        if (buy == 'Y'):
+                        if (buy.upper() == 'Y'):
                             self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                             self.money -= int(state.get_cell(self.position, "Price"))
                             state.change_owner(self.position, self.name)
@@ -279,7 +427,8 @@ class Player():
                             state.change_owner(self.position, self.name)
                         else:
                             print("Computer chose not to buy.")
-            elif card == "Advance token to nearest Utility. If unowned, you may buy it from the Bank. If owned, throw dice and pay owner a total ten times amount thrown":
+            elif card == "Advance token to nearest Utility. If unowned, you may buy it from the Bank. "\
+                        "If owned, throw dice and pay owner a total ten times amount thrown":
                 sn = self.position
                 while "Electric" not in state.get_cell(sn, "SpaceName") and "Water" not in state.get_cell(sn, "SpaceName"):
                     sn += 1
@@ -296,7 +445,7 @@ class Player():
                     print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
                     if self.name != "Computer":
                         buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
-                        if (buy == 'Y'):
+                        if (buy.upper() == 'Y'):
                             self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                             self.money -= int(state.get_cell(self.position, "Price"))
                             state.change_owner(self.position, self.name)
@@ -470,14 +619,14 @@ class HumanPlayer(Player):
                 print(f"{self.name} already own this property.")
                 if self.mp_check(state, state.get_cell(self.position, "Color")) == True:
                     buy = input("Would you like to buy a house or hotel for this property? Y or N? \n")
-                    if buy == 'Y':
+                    if buy.upper() == 'Y':
                         self.buy_hs(state)
                         print(f"{self.name} now has ${self.money}.")
             elif (state.get_cell(self.position, "Owner") == "bank"):
                 print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
                 buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
                 # The player buys the property landed on
-                if (buy == 'Y'):
+                if (buy.upper() == 'Y'):
                     self.props_owned.append(state.get_cell(self.position, "SpaceName"))
                     self.money -= int(state.get_cell(self.position, "Price"))
                     state.change_owner(self.position, self.name)
@@ -485,10 +634,10 @@ class HumanPlayer(Player):
                     if state.get_cell(self.position, "Color") != "NaN":
                         if self.mp_check(state, state.get_cell(self.position, "Color")) == True:
                             buy = input("Would you like to buy a house or hotel for this property? Y or N? \n")
-                            if buy == 'Y':
+                            if buy.upper() == 'Y':
                                 self.buy_hs(state)
                                 print(f"{self.name} now has ${self.money}.")
-                elif (buy == 'N'):
+                elif (buy.upper() == 'N'):
                         print ("The choice is made to not purchase.")
                 else:
                     print("Try again.")
@@ -507,11 +656,11 @@ class HumanPlayer(Player):
             # Sell your own property to the bank: Written by Anshu 
             if (state.get_cell(self.position, "Owner")== self.name) and (state.get_cell(self.position, "MortgageValue") != None):
                 ques = input("Would you like to sell your property? Y or N \n")
-                if ques == "Y":
+                if ques.upper() == "Y":
                     self.money += int(state.get_cell(self.position, "MortgageValue"))
                     state.change_owner(self.position, "Bank")
                     print(f"{self.name} now has ${self.money}.")
-                elif ques != "N":
+                elif ques.upper() != "N":
                     print("Try again.")
                     ques = input("Would you like to sell your property? Y or N \n")
         # Player is in jail
@@ -543,7 +692,7 @@ class HumanPlayer(Player):
             num = input(f"How many houses would you like to buy (1-4)? House Price: {state.get_cell(self.position, 'HouseCost')} \n")
             calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
             confirm = input(f"Are you sure you'd like to buy {num} houses for ${calc_price} Y/N? \n")
-            if confirm == 'Y' and self.money - calc_price > 0 and int(num) < 5:
+            if confirm.upper() == 'Y' and self.money - calc_price > 0 and int(num) < 5:
                 state.change_houses(self.position, int(num))
                 self.money -= calc_price
                 print(f"You now have {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
@@ -554,7 +703,7 @@ class HumanPlayer(Player):
         elif which == "2":
             if state.get_cell(self.position, "NumOfHouses") > 0 and state.get_cell(self.position, "NumOfHotels") == 0:
                 confirm = input(f"Are you sure you'd like to buy a hotel for ${state.get_cell(self.position, 'HouseCost')} Y/N? \n")
-                if confirm == "Y":
+                if confirm.upper() == "Y":
                     state.change_hotels(self.position, 1)
                     self.money -= state.get_cell(self.position, 'HouseCost')
                     state.change_houses(self.position, -1)
@@ -582,7 +731,8 @@ class HumanPlayer(Player):
         
         # 3 options if player has a get out of jail free card
         if (self.jail_cards >= 1):
-            action = input(f"You have 3 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles. \n3. Use a Get Out Of Jail Free Card. (You have {self.jail_cards} Get Out Of Jail Free Card(s))\nEnter 1, 2, or 3\n")
+            action = input(f"You have 3 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles. \n3. "\
+                "Use a Get Out Of Jail Free Card. (You have {self.jail_cards} Get Out Of Jail Free Card(s))\nEnter 1, 2, or 3\n")
         # 2 options otherwise
         else:
             action = input(f"You have 2 options.\n1. Pay the $50 fine and get out of jail.\n2. Attempt to roll doubles.\nEnter 1 or 2.\n")  
