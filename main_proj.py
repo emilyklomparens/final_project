@@ -571,9 +571,18 @@ class Player():
             return self.col_mp[col]
 
 class HumanPlayer(Player):
-    """ This class represents a Human Player of the game.
+    """ This class represents a Human Player of the game. This class is the child 
+    class of the Player Class.
     
-        Args: 
+        Args: (same as Player Class)
+        name (string): the name of the player.
+        money (int): the amount of money the player has.
+        jail (boolean): whether the player is in jail or not.
+        props_owned (list of strings): a list of strings comprising the names of
+        each property the player owns.
+        jail_turn_counter (int): how long the player has been in jail.
+        position (int): what space number the player is on with respect to the board.
+        jail_cards (int): number of get out of jail free cards a player has.
     """
     
     def turn(self, state, other):
@@ -801,13 +810,14 @@ class ComputerPlayer(Player):
         self.jail_cards = 0
         
     def turn(self, state, other):
-        "A modification of the turn method, except during the game, the computerplayer automatically makes decisions on whether or not to sell/buy property
+        """
+        A modification of the turn method, except during the game, 
+        the computerplayer automatically makes decisions on whether or not to sell/buy property
         
         Args:
-            - State: The gamestate of the file
-            - Other: The other player
-        
-        "
+        State: The gamestate of the file
+        Other: The other player
+        """
         if (self.jail == False):
             roll1 = rand.randint(1,6)
             roll2 = rand.randint(1,6)
