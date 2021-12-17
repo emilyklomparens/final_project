@@ -602,10 +602,9 @@ class HumanPlayer(Player):
             print(f"{self.name}, press enter to roll.")
             input()
             # Simulates one roll
-            #roll1 = rand.randint(1,6)
-            #roll2 = rand.randint(1,6)
-            #roll =  roll1 + roll2
-            roll = 1
+            roll1 = rand.randint(1,6)
+            roll2 = rand.randint(1,6)
+            roll =  roll1 + roll2
             # Prints roll outcome
             print(f"{self.name} has has ${self.money}.")
             print (f"{self.name} rolled {roll}.")
