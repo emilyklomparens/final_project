@@ -504,7 +504,7 @@ class HumanPlayer(Player):
                 elif (state.get_cell(self.position, "SpaceName") == "Free Parking" or state.get_cell(self.position, "SpaceName") == "Jail"):
                     pass
             
-            # Sell your own property to the bank: Written by Anshu 
+            # Sell your own property to the bank: A similar method to mortgaging. Written by Anshu 
             if (state.get_cell(self.position, "Owner")== self.name) and (state.get_cell(self.position, "MortgageValue") != None):
                 ques = input("Would you like to sell your property? Y or N \n")
                 if ques == "Y":
@@ -651,7 +651,13 @@ class ComputerPlayer(Player):
         self.jail_cards = 0
         
     def turn(self, state, other):
+        "A modification of the turn method, except during the game, the computerplayer automatically makes decisions on whether or not to sell/buy property
         
+        Args:
+            - State: The gamestate of the file
+            - Other: The other player
+        
+        "
         if (self.jail == False):
             roll1 = rand.randint(1,6)
             roll2 = rand.randint(1,6)
