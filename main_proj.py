@@ -444,9 +444,10 @@ class HumanPlayer(Player):
             print(f"{self.name}, press enter to roll.")
             input()
             # Simulates one roll
-            roll1 = rand.randint(1,6)
-            roll2 = rand.randint(1,6)
-            roll =  roll1 + roll2
+            #roll1 = rand.randint(1,6)
+            #roll2 = rand.randint(1,6)
+            #roll =  roll1 + roll2
+            roll = 1
             # Prints roll outcome
             print(f"{self.name} has has ${self.money}.")
             print (f"{self.name} rolled {roll}.")
@@ -472,7 +473,6 @@ class HumanPlayer(Player):
                     buy = input("Would you like to buy a house or hotel for this property? Y or N? \n")
                     if buy == 'Y':
                         self.buy_hs(state)
-                        print(f"{self.name} now has ${self.money}.")
             elif (state.get_cell(self.position, "Owner") == "bank"):
                 print(f"{state.get_cell(self.position, 'SpaceName')} is for sale for ${state.get_cell(self.position, 'Price')}.")
                 buy = input(f"\n{self.name}, would you like to buy Y or N? \n")
@@ -487,7 +487,6 @@ class HumanPlayer(Player):
                             buy = input("Would you like to buy a house or hotel for this property? Y or N? \n")
                             if buy == 'Y':
                                 self.buy_hs(state)
-                                print(f"{self.name} now has ${self.money}.")
                 elif (buy == 'N'):
                         print ("The choice is made to not purchase.")
                 else:
@@ -536,35 +535,37 @@ class HumanPlayer(Player):
             Prints an "invalid input" statement when the program does not
                 recognize an input to a prompt.
         """
-        
-        print("Hotels replace houses on a property. You must have a house to buy a hotel.")
-        which = input("Would you like to buy a house/house(s) for this property or a hotel? 1 for house, 2 for hotel. \n")
-        if which == "1":
-            num = input(f"How many houses would you like to buy (1-4)? House Price: {state.get_cell(self.position, 'HouseCost')} \n")
-            calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
-            confirm = input(f"Are you sure you'd like to buy {num} houses for ${calc_price} Y/N? \n")
-            if confirm == 'Y' and self.money - calc_price > 0 and int(num) < 5:
-                state.change_houses(self.position, int(num))
-                self.money -= calc_price
-                print(f"You now have {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
-                print(f"{self.name} now has ${self.money}.")
-            else:
-                print("You don't have enough money; alternatively, too many houses! \n")
-                pass
-        elif which == "2":
-            if state.get_cell(self.position, "NumOfHouses") > 0 and state.get_cell(self.position, "NumOfHotels") == 0:
-                confirm = input(f"Are you sure you'd like to buy a hotel for ${state.get_cell(self.position, 'HouseCost')} Y/N? \n")
-                if confirm == "Y":
-                    state.change_hotels(self.position, 1)
-                    self.money -= state.get_cell(self.position, 'HouseCost')
-                    state.change_houses(self.position, -1)
-                    print(f"You now have a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
+        if (state.get_cell(self.position, "NumOfHouses")) != "NaN":
+            print("Hotels replace houses on a property. You must have a house to buy a hotel.")
+            which = input("Would you like to buy a house/house(s) for this property or a hotel? 1 for house, 2 for hotel. \n")
+            if which == "1":
+                num = input(f"How many houses would you like to buy (1-4)? House Price: {state.get_cell(self.position, 'HouseCost')} \n")
+                calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
+                confirm = input(f"Are you sure you'd like to buy {num} houses for ${calc_price} Y/N? \n")
+                if confirm == 'Y' and self.money - calc_price > 0 and int(num) < 5:
+                    state.change_houses(self.position, int(num))
+                    self.money -= calc_price
+                    print(f"You now have {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
                     print(f"{self.name} now has ${self.money}.")
+                else:
+                    print("You don't have enough money; alternatively, too many houses! \n")
+                    pass
+            elif which == "2":
+                print(state.get_cell(self.position, "NumOfHouses"))
+                print(state.get_cell(self.position, "NumOfHotels"))
+                if state.get_cell(self.position, "NumOfHouses") > 0 and state.get_cell(self.position, "NumOfHotels") == 0:
+                    confirm = input(f"Are you sure you'd like to buy a hotel for ${state.get_cell(self.position, 'HouseCost')} Y/N? \n")
+                    if confirm == "Y":
+                        state.change_hotels(self.position, 1)
+                        self.money -= state.get_cell(self.position, 'HouseCost')
+                        state.change_houses(self.position, -1)
+                        print(f"You now have a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
+                        print(f"{self.name} now has ${self.money}.")
+                else:
+                    print("Not enough houses; alternatively, only one hotel allowed! \n")
+                    pass
             else:
-                print("Not enough houses; alternatively, only one hotel allowed! \n")
-                pass
-        else:
-            print("Invalid input!")
+                print("Invalid input!")
     
     def get_out_of_jail(self):
         """
@@ -748,32 +749,7 @@ class ComputerPlayer(Player):
         if self.difficulty == 0:
             ch = rand.randint(0, 1)
             if ch == 0:
-                num = rand.randint(1, 4)
-                calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
-                if self.money - calc_price > 0 and int(num) < 5:
-                    state.change_houses(self.position, int(num))
-                    self.money -= calc_price
-                    print(f"Computer bought {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
-                    print(f"{self.name} now has ${self.money}.")
-            elif ch == 1:
-                if int(state.get_cell(self.position, "NumOfHouses")) > 0 and int(state.get_cell(self.position, "NumOfHotels")) == 0:
-                    state.change_hotels(self.position, 1)
-                    self.money -= state.get_cell(self.position, 'HouseCost')
-                    state.change_houses(self.position, -1)
-                    print(f"Computer bought a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
-                    print(f"{self.name} now has ${self.money}.")
-                else:
-                    print("Computer doesn't have enough money; alternatively, too many houses! \n")
-                pass
-        elif self.difficulty == 1:
-            if int(state.get_cell(self.position, "NumOfHouses")) > 0 and int(state.get_cell(self.position, "NumOfHotels")) == 0:
-                if int(state.get_cell(self.position, "NumOfHouses")) == 4:
-                    state.change_hotels(self.position, 1)
-                    self.money -= int(state.get_cell(self.position, 'HouseCost'))
-                    state.change_houses(self.position, -1)
-                    print(f"Computer bought a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
-                    print(f"{self.name} now has ${self.money}.")
-                else:
+                if (state.get_cell(self.position, "NumOfHouses")) != "NaN":
                     num = rand.randint(1, 4)
                     calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
                     if self.money - calc_price > 0 and int(num) < 5:
@@ -781,9 +757,37 @@ class ComputerPlayer(Player):
                         self.money -= calc_price
                         print(f"Computer bought {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
                         print(f"{self.name} now has ${self.money}.")
-            else:
-                print("Not enough houses; alternatively, only one hotel allowed! \n")
-                pass
+            elif ch == 1:
+                if (state.get_cell(self.position, "NumOfHouses")) != "NaN" and (state.get_cell(self.position, "NumOfHotels")) != "NaN":
+                    if int(state.get_cell(self.position, "NumOfHouses")) > 0 and int(state.get_cell(self.position, "NumOfHotels")) == 0:
+                        state.change_hotels(self.position, 1)
+                        self.money -= state.get_cell(self.position, 'HouseCost')
+                        state.change_houses(self.position, -1)
+                        print(f"Computer bought a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
+                        print(f"{self.name} now has ${self.money}.")
+                    else:
+                        print("Computer doesn't have enough money; alternatively, too many houses! \n")
+                    pass
+        elif self.difficulty == 1:
+            if (state.get_cell(self.position, "NumOfHouses")) != "NaN" and (state.get_cell(self.position, "NumOfHotels")) != "NaN":
+                if int(state.get_cell(self.position, "NumOfHouses")) > 0 and int(state.get_cell(self.position, "NumOfHotels")) == 0:
+                    if int(state.get_cell(self.position, "NumOfHouses")) == 4:
+                        state.change_hotels(self.position, 1)
+                        self.money -= int(state.get_cell(self.position, 'HouseCost'))
+                        state.change_houses(self.position, -1)
+                        print(f"Computer bought a new hotel for {state.get_cell(self.position, 'SpaceName')}.")
+                        print(f"{self.name} now has ${self.money}.")
+                    else:
+                        num = rand.randint(1, 4)
+                        calc_price = int(state.get_cell(self.position, 'HouseCost')) * int(num)
+                        if self.money - calc_price > 0 and int(num) < 5:
+                            state.change_houses(self.position, int(num))
+                            self.money -= calc_price
+                            print(f"Computer bought {state.get_cell(self.position, 'NumOfHouses')} houses for {state.get_cell(self.position, 'SpaceName')}.")
+                            print(f"{self.name} now has ${self.money}.")
+                else:
+                    print("Not enough houses; alternatively, only one hotel allowed! \n")
+                    pass
         else:
             print("Invalid input!")
         
@@ -883,6 +887,7 @@ def Game(difficulty, playername):
         rounds += 1
         h1.turn(g,h2)
         print('\n------------------------------------------\n')
+        print(g.board.head())
         h2.turn(g,h1)
         print('\n------------------------------------------\n')
         
